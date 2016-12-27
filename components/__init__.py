@@ -1,3 +1,3 @@
-__all__ = [ "command", "logging", "event" ]
+__all__ = [ "logging", "notification", "response", "DiscordModule" ]
 
 from . import *
