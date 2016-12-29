@@ -3,35 +3,41 @@ import asyncio
 import config
 import components
 from pubsub import pub
+import sys, inspect
 
 class Bot:
     def __init__(self):
         self.config = config.Global()
         self.client = discord.Client()
+        self.modules = []
+        self.load_modules()
 
     def run(self):
         self.loop = asyncio.get_event_loop()
         self.loop.run_until_complete(self.client.run(self.config.token))
         self.loop.close() 
 
-    async def send_message(self, destination, content=None, tts=None, embed=None):
-        try:
-            self.client.send_message(destination, content=None, tts=None, embed=None)
-        except discord.errors.Forbidden:
-            print("Insufficient permissions to send a message on {}.".format(destination.name))
+    def load_modules(self):
+        loaded = ""
+        for name, obj in inspect.getmembers(components):
+            for n, o in inspect.getmembers(obj):
+                if inspect.isclass(o):
+                    if (issubclass(o, components.discordModule.DiscordModule)
+                        and o.__prefix__ is not None):
+                        self.modules.append(o(self))
+                        loaded += " {}".format(o.__name__)
+        
+        if not loaded:
+            print("Mistress, I couldn't load any modules.")
+            sys.exit()
+        else:
+            print("Loaded modules:{}.".format(loaded))
 
 bot = Bot()
 
 @bot.client.event
 async def on_ready():
-    print('Logged in as {} ({}).'.format(bot.client.user.name, bot.client.user.id))
-    print('Connected to {} servers.'.format(len(bot.client.servers)))
-    print('Ready to serve, Mistress!')
-    print('------')
-    if bot.config.notify:
-        for o in bot.config.owners:
-            owner = await bot.client.get_user_info(o)
-            await bot.send_message(owner, "I'm ready to serve you, Mistress!")
+    pub.sendMessage('ready')
 
 @bot.client.event
 async def on_message(message: discord.Message):
@@ -67,9 +73,6 @@ async def on_voice_state_update(before: discord.Member, after: discord.Member):
         pub.sendMessage('voice_status', before=before, after=after)
 
 def main():
-    modules = []
-    modules.append(components.response.response(bot))
-
     bot.run()
 
 if __name__ == '__main__':

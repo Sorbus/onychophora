@@ -1,9 +1,7 @@
-import discord
 import asyncio
+from .discordModule import DiscordModule
+from pubsub import pub
+import discord
 
-class Log(object):
-    def __init__(self, config):
-        pass
-
-    async def __call__(self):
-        pass
+class logging(DiscordModule):
+    __prefix__ = ";"

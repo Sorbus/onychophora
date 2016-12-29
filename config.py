@@ -44,7 +44,7 @@ class ServerConfig(object):
         try:
             configfile = yaml.load(open(self.path))
         except FileNotFoundError:
-
+            
             pass
         except IOError:
             pass
