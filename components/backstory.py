@@ -231,7 +231,7 @@ class backstory(DiscordModule):
         if guild.backstoryChannel == message.channel.id:
             try:
                 return ((message.timestamp - datetime.datetime.fromtimestamp(
-                    guild.backstoryTimestamp)) < datetime.timedelta(minutes=60))
+                    guild.backstoryTimestamp)) < datetime.timedelta(minutes=20))
             except AttributeError:
                 return True
             except TypeError:
