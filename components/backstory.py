@@ -26,7 +26,7 @@ class backstory(DiscordModule):
         }
         self.table = self.db['backstory']
         self.guilds = self.db['guilds']
-        self.backstory = list(self.table.all())
+        self.find_valid()
 
         pub.subscribe(self, 'message')
 
@@ -49,14 +49,23 @@ class backstory(DiscordModule):
                 await self.send_backstory(message)
 
     async def send_backstory(self, message: discord.Message):
-        for item in self.backstory:
+        if self.timestamp < (message.timestamp - datetime.timedelta(minutes = 5)).timestamp():
+            self.find_valid()
+        for item in self.stories:
             if item.key in message.clean_content:
-                if random.randint(0, 100) < int(item.chance) and self.valid_backstory(
-                        message, item):
+                if random.randint(0, 100) < int(item.chance):
                     await asyncio.sleep(random.randint(0,10), loop=self.client.loop)
                     await self.client.send_message(message.channel, item.text)
                     self.entry_time(item.key)
                     self.guild_time(message.server.id)
+
+    def find_valid(self):
+        self.stories = list()
+        self.timestamp = datetime.datetime.now().timestamp()
+        for item in self.table.all():
+            if self.valid_backstory(self.timestamp, item):
+                self.stories.append(item)
+        print(self.stories)
 
     @wraps.message_handler
     @wraps.is_owner
@@ -98,7 +107,8 @@ class backstory(DiscordModule):
                 key=match.group(1),
                 delay=int(match.group(2)),
                 chance=int(match.group(3)),
-                text=match.group(4)
+                text=match.group(4),
+                timestamp=0
             )
             if self.table.find_one(key=match.group(1)):
                 old = self.table.find_one(key=match.group(1))
@@ -111,6 +121,7 @@ class backstory(DiscordModule):
                 msg = "I've memorized my new backstory. Thank you!"
             
             await self.client.send_message(message.channel, msg)
+            self.find_valid()
         else:
             await self.client.send_message(message.channel, ("Sorry, but I didn't understand " +
                                                              "that! The format for this command " +
@@ -148,6 +159,7 @@ class backstory(DiscordModule):
                 else:
                     msg = "That key doesn't exist, sorry."
                 await self.client.send_message(message.channel, msg)
+                self.find_valid()
                 return
 
 
@@ -167,13 +179,18 @@ class backstory(DiscordModule):
         else:
             match = re.fullmatch(self.command_matchers['word'], message.clean_content)
             if match:
-                result = self.table.find_one(key=match.groupd(1))
+                result = self.table.find_one(key=match.group(1))
             else:
                 result = None
 
-        if result:
+        if result and match:
             await self.client.send_message(
-                message.channel, "{}: {}".format(match.group(1), result.text))
+                message.channel, ("Here's the first item with that key:\n**Key**: {}\n"
+                                  "**Delay**: {}\n**Chance**: {}\n**Text**: {}\n**Id**: {}").format(
+                                      result.key, result.delay, result.chance, result.text,
+                                      result.id))
+        elif match:
+            await self.client.send_message(message.channel, "Sorry, that's not a valid key")
         else:
             await self.client.send_message(message.channel, "Sorry, but I didn't understand "
                                            "that! The format for this command is `{} key`. Could "
@@ -184,13 +201,20 @@ class backstory(DiscordModule):
     @wraps.message_handler
     @wraps.is_owner
     async def info(self, message: discord.Message):
-        pass
-
+        stories = self.table.all()
+        msg = "Here are the items I currently have in my backstory:\n"
+        for item in stories:
+            msg += "[{}] ".format(item.key)
+            if len(msg) > 1800:
+                await self.client.send_message(message.channel, msg)
+                await asyncio.sleep(2, loop=self.client.loop)
+                msg = ""
+        if msg:
+            await self.client.send_message(message.channel, msg)
 
     def guild_time(self, guildId: int):
         entry = dict(guildId=guildId, backstoryTimestamp=datetime.datetime.now().timestamp())
         self.guilds.update(entry, ['guildId'])
-        # self.backstory = random.shuffle(self.backstory)
     
     def entry_time(self, key: str):
         entry = dict(key=key, timestamp=datetime.datetime.now().timestamp())
@@ -214,9 +238,9 @@ class backstory(DiscordModule):
         else:
             return False
 
-    def valid_backstory(self, message: discord.Message, story: stuf):
+    def valid_backstory(self, now: float, story: stuf):
         try:
-            return ((message.timestamp - datetime.datetime.fromtimestamp(story.timestamp))
+            return ((now - datetime.datetime.fromtimestamp(story.timestamp))
                     < datetime.timedelta(minutes=int(story.delay)))
         except AttributeError:
             return True
