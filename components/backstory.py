@@ -240,8 +240,8 @@ class backstory(DiscordModule):
 
     def valid_backstory(self, now: float, story: stuf):
         try:
-            return ((now - datetime.datetime.fromtimestamp(story.timestamp))
-                    < datetime.timedelta(minutes=int(story.delay)))
+            return ((now - story.timestamp)
+                    < datetime.timedelta(minutes=int(story.delay).timestamp()))
         except AttributeError:
             return True
         except TypeError:
