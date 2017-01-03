@@ -58,6 +58,7 @@ class backstory(DiscordModule):
                     await self.client.send_message(message.channel, item.text)
                     self.entry_time(item.key)
                     self.guild_time(message.server.id)
+                    return
 
     def find_valid(self):
         self.stories = list()
