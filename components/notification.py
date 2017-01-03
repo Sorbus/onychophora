@@ -1,5 +1,6 @@
 import asyncio
-from .discordModule import DiscordModule
+import components.parts.commandWraps as wraps
+from components.parts.discordModule import DiscordModule as DiscordModule
 from pubsub import pub
 import discord
 

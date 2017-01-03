@@ -1,7 +1,9 @@
 import asyncio
-from .discordModule import DiscordModule
+import components.parts.commandWraps as wraps
+from components.parts.discordModule import DiscordModule as DiscordModule
 from pubsub import pub
 import discord
+from colorama import Fore, Back, Style
 
 class startup(DiscordModule):
     __prefix__ = ";"
@@ -27,8 +29,8 @@ class startup(DiscordModule):
         print('Ready to serve, Mistress!')
         print('------')
         if self.config.notify:
-            for o in self.config.owners:
+            for o in self.config.owners.keys():
                 owner = await self.client.get_user_info(o)
-                await self.client.send_message(owner, "I'm ready to serve you, Mistress!")
+                await self.client.send_message(owner, "I'm ready to serve you, {}!".format(self.config.owners[o]))
 
     

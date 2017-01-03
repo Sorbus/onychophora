@@ -1,9 +1,10 @@
 import asyncio
-from .discordModule import DiscordModule
+import components.parts.commandWraps as wraps
+from components.parts.discordModule import DiscordModule as DiscordModule
 from pubsub import pub
 import discord
 
-class response(DiscordModule):
+class utility(DiscordModule):
     __prefix__ = "~"
 
     def __init__(self, bot):
@@ -20,15 +21,19 @@ class response(DiscordModule):
 
         pub.subscribe(self, 'message')
 
+    @wraps.message_handler
     async def avatar(self, message: discord.Message):
         await self.client.send_message(message.channel, message.author.avatar_url)
 
+    @wraps.message_handler
     async def user_details(self, message: discord.Message):
         pass
 
+    @wraps.message_handler
     async def channel_details(self, message: discord.Message):
         pass
 
+    @wraps.message_handler
     async def server_details(self, message: discord.Message):
         server = message.server
         result = ("`Name:` {}\n`Id:` {}\n`Owner:` {} ({})\n`Icon:`"
@@ -50,9 +55,11 @@ class response(DiscordModule):
 
         await self.client.send_message(message.channel, result)
 
+    @wraps.message_handler
     async def save_chat(self, message: discord.Message):
         pass
 
+    @wraps.message_handler
     async def test(self, message: discord.Message):
         user = await self.user_in_string(message, message.content[6:])
         if not user:

@@ -4,11 +4,15 @@ import config
 import components
 from pubsub import pub
 import sys, inspect
+import colorama
+import dataset
+from stuf import stuf
 
 class Bot:
     def __init__(self):
         self.config = config.Global()
         self.client = discord.Client()
+        self.db = dataset.connect('sqlite:///' + self.config.files['database'], row_type=stuf)
         self.modules = []
         self.load_modules()
 
@@ -22,7 +26,7 @@ class Bot:
         for name, obj in inspect.getmembers(components):
             for n, o in inspect.getmembers(obj):
                 if inspect.isclass(o):
-                    if (issubclass(o, components.discordModule.DiscordModule)
+                    if (issubclass(o, components.parts.discordModule.DiscordModule)
                         and o.__prefix__ is not None):
                         self.modules.append(o(self))
                         loaded += " {}".format(o.__name__)
@@ -33,6 +37,7 @@ class Bot:
         else:
             print("Loaded modules:{}.".format(loaded))
 
+colorama.init()
 bot = Bot()
 
 @bot.client.event
@@ -66,6 +71,14 @@ async def on_server_join(server: discord.Server):
 @bot.client.event
 async def on_server_remove(server: discord.Server):
     pub.sendMessage('server_remove', server=server)
+
+@bot.client.event
+async def on_member_join(member: discord.member):
+    pub.sendMessage('member_join', member=member)
+
+@bot.client.event
+async def on_member_remove(member: discord.member):
+    pub.sendMessage('member_remove', member=member)
 
 @bot.client.event
 async def on_voice_state_update(before: discord.Member, after: discord.Member):
