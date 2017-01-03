@@ -1,6 +1,6 @@
 import asyncio
-import components.parts.commandWraps as wraps
-from components.parts.discordModule import DiscordModule as DiscordModule
+import components.snips.commandWraps as wraps
+from components.snips.discordModule import DiscordModule as DiscordModule
 from pubsub import pub
 import discord
 from colorama import Fore, Back, Style

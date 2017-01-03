@@ -26,7 +26,7 @@ class Bot:
         for name, obj in inspect.getmembers(components):
             for n, o in inspect.getmembers(obj):
                 if inspect.isclass(o):
-                    if (issubclass(o, components.parts.discordModule.DiscordModule)
+                    if (issubclass(o, components.snips.discordModule.DiscordModule)
                         and o.__prefix__ is not None):
                         self.modules.append(o(self))
                         loaded += " {}".format(o.__name__)

@@ -1,7 +1,7 @@
 import asyncio
-import components.parts.commandWraps as wraps
-from components.parts.discordModule import DiscordModule
-from components.parts.discordModule import CommandError
+import components.snips.commandWraps as wraps
+from components.snips.discordModule import DiscordModule
+from components.snips.discordModule import CommandError
 from pubsub import pub
 import random
 import discord
