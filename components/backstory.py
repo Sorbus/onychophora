@@ -66,7 +66,6 @@ class backstory(DiscordModule):
         for item in self.table.all():
             if self.valid_backstory(self.timestamp, item):
                 self.stories.append(item)
-        print(self.stories)
 
     @wraps.message_handler
     @wraps.is_owner
