@@ -53,7 +53,13 @@ class backstory(DiscordModule):
             self.find_valid()
         now = datetime.datetime.utcnow()
         for item in self.stories:
-            if item.key.lower() in message.clean_content.lower().split(" "):
+            if (
+                    (len(item.key) < 6 and
+                     item.key.lower() in message.clean_content.lower().split(" "))
+                    or
+                    (len(item.key) > 5 and
+                     item.key.lower() in message.clean_content.lower())
+                ):
                 if random.randint(0, 100) < int(item.chance):
                     self.entry_time(item.key, now.timestamp())
                     self.guild_time(message.server.id, now.timestamp())
