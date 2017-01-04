@@ -4,7 +4,10 @@ from components.snips.discordModule import DiscordModule as DiscordModule
 from pubsub import pub
 import discord
 
-class utility(DiscordModule):
+class Utility(DiscordModule):
+    """
+        Various utility functions.
+    """
     __prefix__ = "~"
 
     def __init__(self, bot):

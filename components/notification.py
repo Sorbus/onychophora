@@ -4,5 +4,8 @@ from components.snips.discordModule import DiscordModule as DiscordModule
 from pubsub import pub
 import discord
 
-class notification(DiscordModule):
+class Notification(DiscordModule):
+    """
+        Options related to monitoring events.
+    """
     __prefix__ = ";"

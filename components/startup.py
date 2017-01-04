@@ -5,7 +5,10 @@ from pubsub import pub
 import discord
 from colorama import Fore, Back, Style
 
-class startup(DiscordModule):
+class Startup(DiscordModule):
+    """
+        Things to do after the bot has connected to Discord.
+    """
     __prefix__ = ";"
 
     def __init__(self, bot):
@@ -31,6 +34,7 @@ class startup(DiscordModule):
         if self.config.notify:
             for o in self.config.owners.keys():
                 owner = await self.client.get_user_info(o)
-                await self.client.send_message(owner, "I'm ready to serve you, {}!".format(self.config.owners[o]))
+                await self.client.send_message(owner, "I'm ready to serve you, {}!".format(
+                    self.config.owners[o]))
 
     

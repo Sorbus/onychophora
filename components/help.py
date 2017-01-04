@@ -4,7 +4,10 @@ from components.snips.discordModule import DiscordModule as DiscordModule
 from pubsub import pub
 import discord
 
-class help(DiscordModule):
+class Help(DiscordModule):
+    """
+        Handles help messages and suchlike
+    """
     __prefix__ = "-"
 
     def __init__(self, bot):

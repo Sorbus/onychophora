@@ -4,5 +4,8 @@ from components.snips.discordModule import DiscordModule as DiscordModule
 from pubsub import pub
 import discord
 
-class logging(DiscordModule):
+class Logging(DiscordModule):
+    """
+        Options related to monitoring channel activity.
+    """
     __prefix__ = ";"

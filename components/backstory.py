@@ -11,7 +11,11 @@ import re
 import datetime
 import random
 
-class backstory(DiscordModule):
+class Backstory(DiscordModule):
+    """
+        Intermittent responses to various keywords.
+        Differentiated from reactions by being on timers.
+    """
     __prefix__ = "!"
 
     def __init__(self, bot):

@@ -8,7 +8,10 @@ import discord
 import dataset
 from stuf import stuf
 
-class found(DiscordModule):
+class Quotes(DiscordModule):
+    """
+        Allows users to store and retrieve quotes.
+    """
     __prefix__ = "."
 
     def __init__(self, bot):
