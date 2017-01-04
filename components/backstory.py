@@ -54,7 +54,9 @@ class backstory(DiscordModule):
         for item in self.stories:
             if item.key in message.clean_content:
                 if random.randint(0, 100) < int(item.chance):
-                    await asyncio.sleep(random.randint(0,10), loop=self.client.loop)
+                    await asyncio.sleep(random.randint(0, 5), loop=self.client.loop)
+                    await self.client.send_typing(message.channel)
+                    await asyncio.sleep(random.randint(0, 5), loop=self.client.loop)
                     await self.client.send_message(message.channel, item.text)
                     self.entry_time(item.key)
                     self.guild_time(message.server.id)

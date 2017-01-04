@@ -46,22 +46,22 @@ async def on_ready():
 
 @bot.client.event
 async def on_message(message: discord.Message):
-    if message.author.id is not bot.client.user.id:
+    if message.author.id != bot.client.user.id:
         pub.sendMessage('message', message=message)
 
 @bot.client.event
 async def on_message_delete(message: discord.Message):
-    if message.author.id is not bot.client.user.id:
+    if message.author.id != bot.client.user.id:
         pub.sendMessage('message_delete', message=message)
 
 @bot.client.event
 async def on_message_edit(before: discord.Message, after: discord.Message):
-    if before.author.id is not bot.client.user.id:
+    if before.author.id != bot.client.user.id:
         pub.sendMessage('message_edit', before=before, after=after)
 
 @bot.client.event
 async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
-    if user.id is not bot.client.user.id:
+    if user.id != bot.client.user.id:
         pub.sendMessage('reaction_add', reaction=reaction, user=user)
 
 @bot.client.event
