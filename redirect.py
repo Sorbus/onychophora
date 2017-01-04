@@ -8,7 +8,7 @@ channels = {}
 
 owners = [111272999478394880, 163476908493766656]
 
-pattern = re.compile(r'^\.send ([\-\w]+) (.+)$', flags=re.IGNORECASE)
+pattern = re.compile(r'^\.send ([\-\w]+) ([^$]+)$', flags=re.IGNORECASE)
 
 @client.event
 async def on_ready():
