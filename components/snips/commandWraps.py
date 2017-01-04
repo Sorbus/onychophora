@@ -43,7 +43,7 @@ def message_handler(function):
                 print((Fore.MAGENTA + "{} MessageTrigger | Command errored after {:.8}s\n" +
                        Fore.MAGENTA + "\tUser: {} [{}]\n" + Fore.MAGENTA +
                        "\tChannel: direct message\n\tMessage: {}\n" + Fore.MAGENTA +
-                       "\tError: {}").format(
+                       "\tError: {}" + Fore.RESET).format(
                            datetime.datetime.now().strftime("%H:%M:%S"),
                            (message.timestamp - datetime.datetime.now()).total_seconds(),
                            message.author.name, message.author.id, message.content, err.message)
@@ -52,7 +52,8 @@ def message_handler(function):
                 print((Fore.MAGENTA + "{} MessageTrigger | Command errored after {:.8}s\n" +
                        Fore.MAGENTA + "\tUser: {} [{}]\n" + Fore.MAGENTA +
                        "\tChannel: private group ({})\n" + Fore.MAGENTA + "\tMembers: {}\n" +
-                       Fore.MAGENTA + "\t" + "Message: {}\n" + Fore.MAGENTA + "\tError: {}").format(
+                       Fore.MAGENTA + "\t" + "Message: {}\n" + Fore.MAGENTA + "\tError: {}" +
+                       Fore.RESET).format(
                            datetime.datetime.now().strftime("%H:%M:%S"),
                            (message.timestamp - datetime.datetime.now()).total_seconds(),
                            message.author.name, message.author.id, message.channel.id,
@@ -62,7 +63,7 @@ def message_handler(function):
                 print((Fore.MAGENTA + "{} MessageTrigger | Command errored after {:.8}s\n\t" +
                        Fore.MAGENTA + "User: {} [{}]\n\t" + Fore.MAGENTA + "Server: {} [{}]\n\t" +
                        Fore.MAGENTA + "Channel: {} [{}]\n\t" + Fore.MAGENTA + "Message: {}\n" +
-                       Fore.MAGENTA + "\tError: {}").format(
+                       Fore.MAGENTA + "\tError: {}" + Fore.RESET).format(
                            datetime.datetime.now().strftime("%H:%M:%S"),
                            (message.timestamp - datetime.datetime.now()).total_seconds(),
                            message.author.name, message.author.id, message.server.name,
