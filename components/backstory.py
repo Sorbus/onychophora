@@ -95,7 +95,7 @@ class backstory(DiscordModule):
         await self.client.delete_message(message)
 
     patterns = {
-        "add": re.compile(r'^!\w+ {([\w\s]+)} time=(\d+) chance=(\d+) {(.+)}$',
+        "add": re.compile(r'^!\w+ {(.+)} time=(\d+) chance=(\d+) {(.+)}$',
                           flags=re.IGNORECASE),
     }
 
@@ -206,7 +206,7 @@ class backstory(DiscordModule):
         stories = self.table.all()
         msg = "Here are the items I currently have in my backstory:\n"
         for item in stories:
-            msg += "[{}] ".format(item.key)
+            msg += "{} [{}] ".format(item.key, item.id)
             if len(msg) > 1800:
                 await self.client.send_message(message.channel, msg)
                 await asyncio.sleep(2, loop=self.client.loop)
