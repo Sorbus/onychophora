@@ -34,7 +34,8 @@ async def on_message(message: discord.Message):
             else:
                 print("channel not found")
         else:
-            print("no match")
+            #print("no match")
+            pass
     else:
         #print("invalid channel or user")
         pass
