@@ -25,6 +25,7 @@ class Global(object):
             self.favored = configfile['favored'] if "favored" in configfile else {}
             self.whitelist = configfile['whitelist']
             self.blacklist = configfile['blacklist']
+            self.bcktimer = configfile['bcktimer'] if "bcktimer" in configfile else 20
             self.files = configfile['files']
             if "files" not in configfile:
                 print("Mistress, I don't know where any of my files are.\n"

@@ -45,28 +45,29 @@ class backstory(DiscordModule):
             if not guild:
                 return
 
-            if self.valid_channel(message):
+            if self.channel_ready(message):
                 await self.send_backstory(message)
 
     async def send_backstory(self, message: discord.Message):
-        if self.timestamp < (message.timestamp - datetime.timedelta(minutes = 5)).timestamp():
+        if self.timestamp < (message.timestamp - datetime.timedelta(minutes = 5)):
             self.find_valid()
+        now = datetime.datetime.utcnow()
         for item in self.stories:
             if item.key in message.clean_content:
                 if random.randint(0, 100) < int(item.chance):
+                    self.entry_time(item.key, now.timestamp())
+                    self.guild_time(message.server.id, now.timestamp())
                     await asyncio.sleep(random.randint(0, 5), loop=self.client.loop)
                     await self.client.send_typing(message.channel)
                     await asyncio.sleep(random.randint(0, 5), loop=self.client.loop)
                     await self.client.send_message(message.channel, item.text)
-                    self.entry_time(item.key)
-                    self.guild_time(message.server.id)
                     return
 
     def find_valid(self):
         self.stories = list()
-        self.timestamp = datetime.datetime.now().timestamp()
+        self.timestamp = datetime.datetime.now()
         for item in self.table.all():
-            if self.valid_backstory(self.timestamp, item):
+            if self.story_ready(self.timestamp, item):
                 self.stories.append(item)
 
     @wraps.message_handler
@@ -203,7 +204,7 @@ class backstory(DiscordModule):
     @wraps.message_handler
     @wraps.is_owner
     async def info(self, message: discord.Message):
-        stories = self.table.all()
+        stories = self.table.find(order_by='key')
         msg = "Here are the items I currently have in my backstory:\n"
         for item in stories:
             msg += "{} [{}] ".format(item.key, item.id)
@@ -214,15 +215,18 @@ class backstory(DiscordModule):
         if msg:
             await self.client.send_message(message.channel, msg)
 
-    def guild_time(self, guildId: int):
-        entry = dict(guildId=guildId, backstoryTimestamp=datetime.datetime.now().timestamp())
+    def guild_time(self, guildId: int, now: float):
+        entry = dict(guildId=guildId, backstoryTimestamp=now)
         self.guilds.update(entry, ['guildId'])
     
-    def entry_time(self, key: str):
-        entry = dict(key=key, timestamp=datetime.datetime.now().timestamp())
+    def entry_time(self, key: str, now: float):
+        entry = dict(key=key, timestamp=now)
         self.table.update(entry, ['key'])
 
-    def valid_channel(self, message: discord.Message):
+    def is_ready(self, now: datetime.datetime, then: datetime.datetime, minutes=0, seconds=0):
+        pass
+
+    def channel_ready(self, message: discord.Message):
         guild = self.guilds.find_one(guildId=message.server.id)
         if not guild:
             return False
@@ -231,8 +235,11 @@ class backstory(DiscordModule):
 
         if guild.backstoryChannel == message.channel.id:
             try:
-                return ((message.timestamp - datetime.datetime.fromtimestamp(
-                    guild.backstoryTimestamp)) < datetime.timedelta(minutes=20))
+                return (
+                    datetime.datetime.fromtimestamp(
+                        guild.backstoryTimestamp) < (message.timestamp - datetime.timedelta(
+                            minutes=self.config.bcktimer))
+                )
             except AttributeError:
                 return True
             except TypeError:
@@ -240,13 +247,16 @@ class backstory(DiscordModule):
         else:
             return False
 
-    def valid_backstory(self, now: float, story: stuf):
+    def story_ready(self, now: datetime.datetime, story: stuf):
         try:
-            return ((now - story.timestamp)
-                    < datetime.timedelta(minutes=int(story.delay).timestamp()))
+            # print(story.key)
+            # print(
+            #     datetime.datetime.fromtimestamp(story.timestamp) < (now - datetime.timedelta(minutes=story.delay))
+            # )
+            return (
+                datetime.datetime.fromtimestamp(story.timestamp) < (now - datetime.timedelta(minutes=story.delay))
+            )
         except AttributeError:
-            return True
-        except TypeError:
             return True
 
 
