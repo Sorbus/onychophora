@@ -1,6 +1,7 @@
 import discord
 import asyncio
 import re
+import random
 
 client = discord.Client()
 
@@ -30,6 +31,8 @@ async def on_message(message: discord.Message):
 
         if match: 
             if match.group(1) in channels:
+                await client.send_typing(channels[match.group(1)])
+                await asyncio.sleep(random.randint(1, 5), loop=client.loop)
                 await client.send_message(channels[match.group(1)], match.group(2))
             else:
                 print("channel not found")
