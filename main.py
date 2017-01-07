@@ -14,12 +14,13 @@ class Bot:
         self.client = discord.Client()
         self.db = dataset.connect('sqlite:///' + self.config.files['database'], row_type=stuf)
         self.modules = []
+        self.prefixes = {}
         self.load_modules()
 
     def run(self):
         self.loop = asyncio.get_event_loop()
         self.loop.run_until_complete(self.client.run(self.config.token))
-        self.loop.close() 
+        self.loop.close()
 
     def load_modules(self):
         loaded = ""
@@ -27,15 +28,23 @@ class Bot:
             for n, o in inspect.getmembers(obj):
                 if inspect.isclass(o):
                     if (issubclass(o, components.snips.discordModule.DiscordModule)
-                        and o.__prefix__ is not None):
+                            and o.__prefix__ is not None
+                            and o.__value__ is not None
+                            and str(o.__name__) not in self.config.module_blacklist):      
                         self.modules.append(o(self))
+                        if o.__prefix__ in self.prefixes:
+                            if self.prefixes[o.__prefix__] != o.__value__.lower():
+                                print("Prefix conflict on {}: {} is not {}".format(
+                                    o.__prefix__, o.__value__, self.prefixes[o.__prefix__]))
+                        self.prefixes[o.__prefix__] = o.__value__.lower()
                         loaded += " {}".format(o.__name__)
-        
+
         if not loaded:
             print("Mistress, I couldn't load any modules.")
             sys.exit()
         else:
             print("Loaded modules:{}.".format(loaded))
+            # print(self.prefixes.keys())
 
 colorama.init()
 bot = Bot()
@@ -47,7 +56,12 @@ async def on_ready():
 @bot.client.event
 async def on_message(message: discord.Message):
     if message.author.id != bot.client.user.id:
-        pub.sendMessage('message', message=message)
+        pub.sendMessage('message-all', message=message)
+        for key, value in bot.prefixes.items():
+            if message.content.startswith(key):
+                pub.sendMessage("message-{}".format(value), message=message)
+                return
+        pub.sendMessage('message-other', message=message)
 
 @bot.client.event
 async def on_message_delete(message: discord.Message):

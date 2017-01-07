@@ -9,6 +9,7 @@ class Help(DiscordModule):
         Handles help messages and suchlike
     """
     __prefix__ = "-"
+    __value__ = "dash"
 
     def __init__(self, bot):
         super().__init__(bot)

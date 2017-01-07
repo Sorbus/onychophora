@@ -9,6 +9,7 @@ class Utility(DiscordModule):
         Various utility functions.
     """
     __prefix__ = "~"
+    __value__ = "tilde"
 
     def __init__(self, bot):
         super().__init__(bot)
@@ -21,8 +22,6 @@ class Utility(DiscordModule):
             "savechat": self.save_chat,
             "test": self.test
         }
-
-        pub.subscribe(self, 'message')
 
     @wraps.message_handler
     async def avatar(self, message: discord.Message):

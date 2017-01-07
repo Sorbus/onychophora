@@ -10,15 +10,16 @@ class Startup(DiscordModule):
         Things to do after the bot has connected to Discord.
     """
     __prefix__ = ";"
+    __value__ = "semicolon"
 
     def __init__(self, bot):
         super().__init__(bot)
-        pub.subscribe(self, 'ready')
+        pub.subscribe(self.run, 'ready')
 
-    def __call__(self):
-        self.loop.create_task(self.fire())
+    def run(self):
+        self.loop.create_task(self.ready())
 
-    async def fire(self):
+    async def ready(self):
         print('Logged in as {} ({}).'.format(self.client.user.name, self.client.user.id))
         print('Connected to {} servers:'.format(len(self.client.servers)))
         for s in self.client.servers:

@@ -6,6 +6,7 @@ from pubsub import pub
 import random
 import discord
 import dataset
+import sqlalchemy
 from stuf import stuf
 import re
 import datetime
@@ -17,6 +18,7 @@ class Backstory(DiscordModule):
         Differentiated from reactions by being on timers.
     """
     __prefix__ = "!"
+    __value__ = "exclaimation"
 
     def __init__(self, bot):
         super().__init__(bot)
@@ -28,29 +30,36 @@ class Backstory(DiscordModule):
             "bckstry_info": self.info,
             "bckstry_toggle": self.toggle_state
         }
-        self.table = self.db['backstory']
+
+        try:
+            self.table = self.db.load_table('backstory')
+        except sqlalchemy.exc.NoSuchTableError:
+            self.table = self.db.create_table('backstory', primary_id='key', primary_type='String')
+
+            self.table.create_column('delay', sqlalchemy.INT)
+            self.table.create_column('chance', sqlalchemy.INT)
+            self.table.create_column('text', sqlalchemy.TEXT)
+            self.table.create_column('timestamp', sqlalchemy.DATETIME)
+
+            self.table.create_index(['keyword', 'guildId'])
+
         self.guilds = self.db['guilds']
         self.find_valid()
 
-        pub.subscribe(self, 'message')
+        pub.subscribe(self.process, 'message-other')
+    
+    async def process(self, **kwargs):
+        if "message" in kwargs:
+            message = kwargs['message']
+            if message.server:
+                guild = self.guilds.find_one(guildId=message.server.id)
+                if not guild:
+                    return
 
-    async def fire(self, message: discord.Message):
-        if str(message.content).startswith(self.__prefix__):
-            if str(message.content).split(' ')[0][1:] in self.__dispatcher__.keys():
-                try:
-                    await self.__dispatcher__[str(message.content).split(' ')[0][1:]](
-                        message=message)
-                except TypeError:
-                    pass
-                return
-
-        if message.server:
-            guild = self.guilds.find_one(guildId=message.server.id)
-            if not guild:
-                return
-
-            if self.channel_ready(message):
-                await self.send_backstory(message)
+                if self.channel_ready(message):
+                    await self.send_backstory(message)
+        else:
+            raise CommandError("handler not implemented in Backstory.process()")
 
     async def send_backstory(self, message: discord.Message):
         if self.timestamp < (message.timestamp - datetime.timedelta(minutes = 5)):
@@ -248,7 +257,7 @@ class Backstory(DiscordModule):
                 return (
                     datetime.datetime.fromtimestamp(
                         guild.backstoryTimestamp) < (message.timestamp - datetime.timedelta(
-                            minutes=self.config.bcktimer))
+                            minutes=self.config.backstory.timer))
                 )
             except AttributeError:
                 return True
@@ -259,10 +268,6 @@ class Backstory(DiscordModule):
 
     def story_ready(self, now: datetime.datetime, story: stuf):
         try:
-            # print(story.key)
-            # print(
-            #     datetime.datetime.fromtimestamp(story.timestamp) < (now - datetime.timedelta(minutes=story.delay))
-            # )
             return (
                 datetime.datetime.fromtimestamp(story.timestamp) < (now - datetime.timedelta(minutes=story.delay))
             )

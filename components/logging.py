@@ -9,3 +9,4 @@ class Logging(DiscordModule):
         Options related to monitoring channel activity.
     """
     __prefix__ = ";"
+    __value__ = "semicolon"

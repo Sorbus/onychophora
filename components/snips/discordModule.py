@@ -11,6 +11,13 @@ class DiscordModule(object):
     '''
     __prefix__ = None
     # must be set to load
+    __value__ = None
+    '''
+        Examples:
+        ~: tilde
+        !: exclaimation
+
+    '''
     __dispatcher__ = {}
     # should be set if used
 
@@ -22,7 +29,7 @@ class DiscordModule(object):
         self.client = bot.client
         self.db = bot.db
         self.loop = asyncio.get_event_loop()
-        # pub.subscribe(self, 'message')
+        pub.subscribe(self, 'message-{}'.format(self.__value__))
 
     def __call__(self, message):
         '''
@@ -42,7 +49,7 @@ class DiscordModule(object):
                     except TypeError:
                         pass
         else:
-            raise CommandError("handler not implemented in discordModule.fire()")
+            raise CommandError("handler not implemented in DiscordModule.fire()")
 
     async def user_in_string(self, message: discord.Message, text: str):
         result = await self.users_in_string(message, text)

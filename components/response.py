@@ -10,6 +10,7 @@ class Response(DiscordModule):
         Unlike backstory they have no timer, and unlike quotes they're looser.
     """
     __prefix__ = "."
+    __value__ = "period"
 
     def __init__(self, bot):
         super().__init__(bot)

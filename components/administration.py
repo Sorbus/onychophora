@@ -14,6 +14,7 @@ class Administration(DiscordModule):
         Various owner-only commands for bot management.
     """
     __prefix__ = "."
+    __value__ = "period"
 
     def __init__(self, bot):
         super().__init__(bot)

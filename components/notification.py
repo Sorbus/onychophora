@@ -9,3 +9,4 @@ class Notification(DiscordModule):
         Options related to monitoring events.
     """
     __prefix__ = ";"
+    __value__ = "semicolon"
