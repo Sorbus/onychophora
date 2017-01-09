@@ -29,7 +29,7 @@ class DiscordModule(object):
         self.client = bot.client
         self.db = bot.db
         self.loop = asyncio.get_event_loop()
-        pub.subscribe(self, 'message-{}'.format(self.__value__))
+        pub.subscribe(self, 'message.{}'.format(self.__value__))
 
     def __call__(self, message):
         '''
@@ -39,17 +39,13 @@ class DiscordModule(object):
 
         self.loop.create_task(self.fire(message=message))
 
-    async def fire(self, **kwargs):
-        if "message" in kwargs:
-            message = kwargs['message']
-            if str(message.content).startswith(self.__prefix__):
-                if str(message.content).split(' ')[0][1:] in self.__dispatcher__.keys():
-                    try:
-                        await self.__dispatcher__[str(message.content).split(' ')[0][1:]](message=message)
-                    except TypeError:
-                        pass
-        else:
-            raise CommandError("handler not implemented in DiscordModule.fire()")
+    async def fire(self, message: discord.Message):
+        if str(message.content).startswith(self.__prefix__):
+            if str(message.content).split(' ')[0][1:] in self.__dispatcher__.keys():
+                try:
+                    await self.__dispatcher__[str(message.content).split(' ')[0][1:]](message=message)
+                except TypeError:
+                    pass
 
     async def user_in_string(self, message: discord.Message, text: str):
         result = await self.users_in_string(message, text)

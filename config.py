@@ -2,12 +2,16 @@ import yaml
 import sys
 import discord
 import atexit
+from pubsub import pub
 
 config_path = "data/config.yml"
 server_path = "data/servers/"
 
 class Global(object):
     def __init__(self, path=config_path):
+        self.load_yaml(path)
+
+    def load_yaml(self, path):
         try:
             configfile = yaml.load(open(path, newline=''))
 
@@ -51,21 +55,3 @@ class Global(object):
         except yaml.parser.ParserError:
             print("Sorry, I couldn't parse config.yml")
             sys.exit()
-
-class ServerConfig(object):
-    def __init__(self, server: discord.Server, path=server_path):
-        self.server = server
-        self.path = path + server.id + ".yml"
-
-        try:
-            configfile = yaml.load(open(self.path))
-        except FileNotFoundError:
-            
-            pass
-        except IOError:
-            pass
-        except yaml.parser.ParserError:
-            pass
-
-    def create_config(self):
-        pass

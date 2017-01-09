@@ -22,12 +22,12 @@ class Startup(DiscordModule):
     async def ready(self):
         print('Logged in as {} ({}).'.format(self.client.user.name, self.client.user.id))
         print('Connected to {} servers:'.format(len(self.client.servers)))
-        for s in self.client.servers:
+        for server in self.client.servers:
             print('\t{}: {} users, {} channels, owned by {}.'.format(
-                s.name,
-                len(s.members),
-                len(s.channels),
-                s.owner.name
+                server.name,
+                len(server.members),
+                len(server.channels),
+                server.owner.name
             ))
 
         print('Ready to serve, Mistress!')
@@ -38,4 +38,3 @@ class Startup(DiscordModule):
                 await self.client.send_message(owner, "I'm ready to serve you, {}!".format(
                     self.config.owners[o]))
 
-    
