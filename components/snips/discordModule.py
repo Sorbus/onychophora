@@ -1,5 +1,8 @@
 import asyncio
+from .commandWraps import *
+
 import re
+import inspect
 import discord
 from pubsub import pub
 
@@ -27,81 +30,141 @@ class DiscordModule(object):
         '''
         self.config = bot.config
         self.client = bot.client
+        self.help = bot.help
+        self.users = bot.users
         self.db = bot.db
         self.loop = asyncio.get_event_loop()
-        pub.subscribe(self, 'message.{}'.format(self.__value__))
+        self.commands=[]
+
+        for name, obj in inspect.getmembers(self):
+            if inspect.isclass(obj):
+                if issubclass(obj, DiscordModule.DiscordCommand):
+                    if (obj.__word__ and
+                            obj.__keys__ and
+                            obj.__desc__ and
+                            obj.__example__):
+                        self.commands.append(obj(self))
+                        for key in obj.__keys__:
+                            self.help['{}{}'.format(self.__prefix__, key)] = (
+                                "**{}**:\n**Keys**: {}\n**Description**: {}\n**Usage**: {}".format(
+                                    obj.__word__,
+                                    ' '.join(obj.__keys__),
+                                    obj.__desc__,
+                                    obj.__example__
+                                ).replace('%prefix%', self.__prefix__)
+                            )
 
     def __call__(self, message):
         '''
             Only implemented if it takes a different input.
             Sorts input so that fire can do magic to it.
         '''
-
-        self.loop.create_task(self.fire(message=message))
+        #self.loop.create_task(self.fire(message=message))
 
     async def fire(self, message: discord.Message):
-        if str(message.content).startswith(self.__prefix__):
-            if str(message.content).split(' ')[0][1:] in self.__dispatcher__.keys():
-                try:
-                    await self.__dispatcher__[str(message.content).split(' ')[0][1:]](message=message)
-                except TypeError:
-                    pass
+        raise NotImplementedError
 
-    async def user_in_string(self, message: discord.Message, text: str):
-        result = await self.users_in_string(message, text)
-        try:
-            return result[0]
-        except IndexError:
-            return False
+    class DiscordCommand(object):
+        __word__ = None # identifies command for permissions
+        __keys__ = None # should be an array
+        __desc__ = None # says what the command does
+        __example__ = None # an example of how to use it
+        __scheme__ = None # if present, used to generate the regex
+        __regex__ = None # regex which determines whether input is valid
 
-    async def users_in_string(self, message: discord.Message, text: str):
-        if message.mentions:
-            return message.mentions
-        d = list(filter(None, text.split(' ')))
-        users = []
-        for x in range(0,len(d) if len(d) < 3 else 3):
-            for y in range(x+1,x+2):
-                print("trying...")
-                m = await message.server.get_member_named(" ".join(d[x:y]))
-                print("I tried")
-                if m is not None:
-                    if m not in users:
-                        users.append(m)
+        def __init__(self, module):
+            self.config = module.config
+            self.client = module.client
+            self.users = module.users
+            self.db = module.db
+            self.loop = asyncio.get_event_loop()
+            for key in self.__keys__:
+                pub.subscribe(self, 'message.{}.{}'.format(module.__value__, key))
+            if self.__scheme__:
+                self.__regex__ = DiscordModule.make_regex(self.__scheme__)
 
-        return users
+        def __call__(self, message):
+            self.loop.create_task(self.process(message=message))
 
-    async def send_and_delete(self, channel: discord.Channel, message: str, sec: int):
-        msg = await self.client.send_message(channel, message)
-        await asyncio.sleep(sec, loop=self.client.loop)
-        await self.client.delete_message(msg)
+        @message_handler
+        async def process(self, message):
+            match = re.fullmatch(self.__regex__, message.content)
+            if not match:
+                raise CommandError("invalid format")
+            else:
+                i = 0
+                gathered = []
+                if self.__scheme__:
+                    for item in match.groups():
+                        if not item:
+                            break
+                        if self.__scheme__[i][0] == 'channel':
+                            channel = await self.client.get_channel(item)
+                            gathered.append(channel)
+                        elif self.__scheme__[i][0] == 'user':
+                            user = None
+                            if re.fullmatch(r'^\d{18}$', item):
+                                user = await self.client.get_user_info(int(item))
+                            else:
+                                for id, name in self.users['names'][message.server.id].items():
+                                    if name == item.lower():
+                                        found = id
+                                        break
+                                for id, name in self.users['nicks'][message.server.id].items():
+                                    if name == item.lower():
+                                        found = id
+                                        break
+                                if found:
+                                    for member in message.server.members:
+                                        if member.id == found:
+                                            user = member
+                                    if not user:
+                                        user = await self.client.get_user_info(id)
+                            gathered.append(user)
+                        elif self.__scheme__[i][0] == 'server':
+                            gathered.append(await self.client.get_server(item))
+                        else:
+                            gathered.append(item)
 
-    command_matchers = {
-        "id": re.compile(r'^[^ ]+ (\d{18})', flags=re.IGNORECASE),
-        "any": re.compile(r'^[^ ]+ ([\w\d]+|"[^\n]+")', flags=re.IGNORECASE),
-        "num": re.compile(r'^[^ ]+ ([\d]+)', flags=re.IGNORECASE),
-        "all": re.compile(r'^[^ ]+ ([^$]+)$', flags=re.IGNORECASE),
-        "word": re.compile(r'^[^ ]+ ([\w]+|"[\w ]+")', flags=re.IGNORECASE),
-        "any_all": re.compile('', flags=re.IGNORECASE),
-        "any_num": re.compile('', flags=re.IGNORECASE)
-        
-    }
+                        i += 1
+                    await self.fire(message, tuple(gathered))
+                else:
+                    await self.fire(message, match)
 
-    async def parse_args(self, message: discord.Message, format: tuple):
-        pass
+        async def fire(self, message: discord.Message, match, tup: tuple=None):
+            raise NotImplementedError
 
+    @staticmethod
+    def make_regex(scheme: list):
+        '''
+        Assemble a regex expression from a list of tuples of the form:
+        [
+            (name, mandatory)
+        ]
+        Note: because of the way these are constructed, weird things will
+                happen if more than one item is optional. No error handling
+                related to this is provided at this time. I should probably
+                add it in, just in case ...
+        '''
+        parts = {
+            "server": r'(\d{18})',
+            "channel": r'(?:<#)?((?<=<#)\d{18}(?=>)|\w+)>?',
+            "user": r'(?:<@)?(?:"(?=.+"))?((?<=<@)\d{18}(?=>)|(?<=").+(?=")|\w+)>?"?',
+            "num": r'(\d+)',
+            "word": r'(?:"(?=.+"))?((?<=").+(?=")|\w+)"?',
+            "all": r'([^$]+)'
+        }
 
-class FormatError(Exception):
-    """
-    Exception raised when a string doesn't match the command format
-    """
+        prep = r'^\S+'
 
-    def __init__(self, message):
-        self.message = message
+        for item in scheme:
+            if item[0] in parts.keys():
+                prep += r'(?: {})'.format(parts[item[0]])
+                prep += r'' if item[1] else r'?'
+            else:
+                raise Exception
 
-class CommandError(Exception):
-    """
-    Exception raised when a command occurs on an inappropriate channel
-    """
+        prep += r'$'
 
-    def __init__(self, message):
-        self.message = message
+        return re.compile(prep, flags=re.IGNORECASE)
+

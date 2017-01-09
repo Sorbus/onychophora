@@ -3,6 +3,7 @@ import components.snips.commandWraps as wraps
 from components.snips.discordModule import DiscordModule as DiscordModule
 from pubsub import pub
 import discord
+import re
 
 class Utility(DiscordModule):
     """
@@ -11,60 +12,92 @@ class Utility(DiscordModule):
     __prefix__ = "~"
     __value__ = "tilde"
 
-    def __init__(self, bot):
-        super().__init__(bot)
+    class Avatar(DiscordModule.DiscordCommand):
+        __word__ = "utility.avatar"
+        __keys__ = ["av", "avatar"]
+        __desc__ = ["Returns a link to the author or another user's avatar."]
+        __example__ = ["%prefix%av | %prefix%av @someone"]
+        __scheme__ = [("user", False)]
 
-        self.__dispatcher__ = {
-            "avatar": self.avatar, "av": self.avatar,
-            "userinfo": self.user_details, "usi": self.user_details,
-            "channelinfo": self.channel_details, "chi": self.channel_details,
-            "serverinfo": self.server_details, "sei": self.server_details,
-            "savechat": self.save_chat,
-            "test": self.test
-        }
+        async def fire(self, message: discord.Message, tup: tuple=None):
+            if len(tup):
+                await self.client.send_message(message.channel, "{}'s avatar is:\n{}.".format(
+                    tup[0].name, tup[0].avatar_url))
+            else:
+                await self.client.send_message(message.channel, "Your avatar is:\n{}.".format(
+                    message.author.avatar_url))
 
-    @wraps.message_handler
-    async def avatar(self, message: discord.Message):
-        await self.client.send_message(message.channel, message.author.avatar_url)
+    class UserDetails(DiscordModule.DiscordCommand):
+        __word__ = "utility.user"
+        __keys__ = ["user", "member"]
+        __desc__ = ["Returns details about the author or another user."]
+        __example__ = ["%prefix%user | %prefix%user @someone"]
+        __scheme__ = [("user", False)]
 
-    @wraps.message_handler
-    async def user_details(self, message: discord.Message):
-        pass
+        async def fire(self, message: discord.Message, tup: tuple=None):
+            pass
 
-    @wraps.message_handler
-    async def channel_details(self, message: discord.Message):
-        pass
+    class ChannelDetails(DiscordModule.DiscordCommand):
+        __word__ = "utility.channel"
+        __keys__ = ["ch", "channel"]
+        __desc__ = ["Returns details about this or another channel."]
+        __example__ = ["%prefix%ch | %prefix%ch #somewhere"]
+        __scheme__ = [("channel", False)]
 
-    @wraps.message_handler
-    async def server_details(self, message: discord.Message):
-        server = message.server
-        result = ("`Name:` {}\n`Id:` {}\n`Owner:` {} ({})\n`Icon:`"
-                  "https://discordcdn.com/icons/{}/{}.jpg\n`Created:` {}\n".format(
-                      server.name,
-                      server.id,
-                      server.owner.name,
-                      server.owner.id,
-                      server.id,
-                      server.icon,
-                      server.created_at
-                      )
-                 )
-        result += "`Members:` {}\n`Roles:` {}\n ".format(
-            len(server.members),
-            len(server.role_hierarchy),
-        )
+        async def fire(self, message: discord.Message, tup: tuple=None):
+            pass
+
+    class ServerDetails (DiscordModule.DiscordCommand):
+        __word__ = "utility.channel"
+        __keys__ = ["server"]
+        __desc__ = ["Returns details about this server."]
+        __example__ = ["%prefix%server"]
+        __scheme__ = []
+
+        async def fire(self, message: discord.Message, tup: tuple=None):
+            server = message.server
+            result = ("`Name:` {}\n`Id:` {}\n`Owner:` {} ({})\n`Icon:`"
+                    "https://discordcdn.com/icons/{}/{}.jpg\n`Created:` {}\n".format(
+                        server.name,
+                        server.id,
+                        server.owner.name,
+                        server.owner.id,
+                        server.id,
+                        server.icon,
+                        server.created_at
+                        )
+                    )
+            result += "`Members:` {}\n`Roles:` {}\n ".format(
+                len(server.members),
+                len(server.role_hierarchy),
+            )
 
 
-        await self.client.send_message(message.channel, result)
+            await self.client.send_message(message.channel, result)
 
-    @wraps.message_handler
-    async def save_chat(self, message: discord.Message):
-        pass
+    class SaveChat(DiscordModule.DiscordCommand):
+        __word__ = "utility.savechat"
+        __keys__ = ["savechat"]
+        __desc__ = ["Saves the last X messages in chat."]
+        __example__ = ["%prefix%savechat 100"]
+        __scheme__ = [("num", True)]
 
-    @wraps.message_handler
-    async def test(self, message: discord.Message):
-        user = await self.user_in_string(message, message.content[6:])
-        if not user:
-            await self.client.send_message(message.channel, "I don't know who that is.")
-        else:
-            await self.client.send_message(message.channel, user.id)
+        async def fire(self, message: discord.Message, tup: tuple=None):
+            pass
+
+    class Test(DiscordModule.DiscordCommand):
+        __word__ = "utility.test"
+        __keys__ = ["test"]
+        __desc__ = ["Simple test command."]
+        __example__ = ["%prefix%test | %prefix%test @someone"]
+        __scheme__ = [("user", False)]
+
+        async def fire(self, message: discord.Message, tup: tuple=None):
+            if not tup:
+                await self.client.send_message(
+                    message.channel, "You're {}.".format(message.author.id))
+            elif not tup[0]:
+                await self.client.send_message(message.channel, "I don't know who that is.")
+            else:
+                await self.client.send_message(
+                    message.channel, "That's {}".format(tup[0].id))

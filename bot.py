@@ -17,6 +17,7 @@ class Bot:
         self.modules = []
         self.prefixes = {}
         self.users = {}
+        self.help = {}
         self.load_modules()
 
         pub.subscribe(self.prepare_users, 'ready')
@@ -56,8 +57,8 @@ class Bot:
             # print(self.prefixes.keys())
 
     def add_user(self, member):
-        self.users['nicks'][member.server.id][member.id] = member.name
-        self.users['names'][member.server.id][member.id] = member.display_name
+        self.users['nicks'][member.server.id][member.id] = member.name.lower()
+        self.users['names'][member.server.id][member.id] = member.display_name.lower()
 
     def remove_user(self, member):
         self.users['nicks'][member.server.id].pop(member.id)
@@ -82,3 +83,5 @@ class Bot:
             self.users['nicks'][server.id] = {}
             self.users['names'][server.id] = {}
             self.add_users(server)
+
+        print(self.users)

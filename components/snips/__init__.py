@@ -1,3 +1,3 @@
-__all__ = ["discordModule", "commandWraps"]
+__all__ = ["discordModule", "commandWraps", "errors", "permissionHandler"]
 
 from . import *

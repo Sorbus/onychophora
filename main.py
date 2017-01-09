@@ -25,7 +25,6 @@ async def on_message(message: discord.Message):
                     value,
                     message.content.split(' ')[0][len(key):]
                     ), message=message)
-                print(message.content.split(' ')[0][len(key):])
                 return
         pub.sendMessage('message.other', message=message)
 
