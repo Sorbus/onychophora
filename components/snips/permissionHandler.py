@@ -10,4 +10,3 @@ def permission_handler(s, message:discord.Message):
     Checks if a command can be run.
     """
 
-    

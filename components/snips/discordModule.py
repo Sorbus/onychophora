@@ -12,16 +12,16 @@ class DiscordModule(object):
         Subclasses will end up reimplementing everything at present,
         but still a good idea for the future.
     '''
-    __prefix__ = None
+    prefix = None
     # must be set to load
-    __value__ = None
+    value = None
     '''
         Examples:
         ~: tilde
         !: exclaimation
 
     '''
-    __dispatcher__ = {}
+    dispatcher = {}
     # should be set if used
 
     def __init__(self, bot):
@@ -39,19 +39,19 @@ class DiscordModule(object):
         for name, obj in inspect.getmembers(self):
             if inspect.isclass(obj):
                 if issubclass(obj, DiscordModule.DiscordCommand):
-                    if (obj.__word__ and
-                            obj.__keys__ and
-                            obj.__desc__ and
-                            obj.__example__):
+                    if (obj.word and
+                            obj.keys and
+                            obj.desc and
+                            obj.example):
                         self.commands.append(obj(self))
-                        for key in obj.__keys__:
-                            self.help['{}{}'.format(self.__prefix__, key)] = (
+                        for key in obj.keys:
+                            self.help['{}{}'.format(self.prefix, key)] = (
                                 "**{}**:\n**Keys**: {}\n**Description**: {}\n**Usage**: {}".format(
-                                    obj.__word__,
-                                    ' '.join(obj.__keys__),
-                                    obj.__desc__,
-                                    obj.__example__
-                                ).replace('%prefix%', self.__prefix__)
+                                    obj.word,
+                                    ' '.join(obj.keys),
+                                    obj.desc,
+                                    obj.example
+                                ).replace('%prefix%', self.prefix)
                             )
 
     def __call__(self, message):
@@ -65,12 +65,13 @@ class DiscordModule(object):
         raise NotImplementedError
 
     class DiscordCommand(object):
-        __word__ = None # identifies command for permissions
-        __keys__ = None # should be an array
-        __desc__ = None # says what the command does
-        __example__ = None # an example of how to use it
-        __scheme__ = None # if present, used to generate the regex
-        __regex__ = None # regex which determines whether input is valid
+        word = None # identifies command for permissions
+        keys = None # should be an array
+        desc = None # says what the command does
+        example = None # an example of how to use it
+        scheme = None # if present, used to generate the regex
+        regex = None # regex which determines whether input is valid
+        requires = None # if set, only allow users with this permission to run the command
 
         def __init__(self, module):
             self.config = module.config
@@ -78,30 +79,30 @@ class DiscordModule(object):
             self.users = module.users
             self.db = module.db
             self.loop = asyncio.get_event_loop()
-            for key in self.__keys__:
-                pub.subscribe(self, 'message.{}.{}'.format(module.__value__, key))
-            if self.__scheme__:
-                self.__regex__ = DiscordModule.make_regex(self.__scheme__)
+            for key in self.keys:
+                pub.subscribe(self, 'message.{}.{}'.format(module.value, key))
+            if self.scheme:
+                self.regex = DiscordModule.make_regex(self.scheme)
 
         def __call__(self, message):
             self.loop.create_task(self.process(message=message))
 
         @message_handler
         async def process(self, message):
-            match = re.fullmatch(self.__regex__, message.content)
+            match = re.fullmatch(self.regex, message.content)
             if not match:
                 raise CommandError("invalid format")
             else:
                 i = 0
                 gathered = []
-                if self.__scheme__:
+                if self.scheme:
                     for item in match.groups():
                         if not item:
                             break
-                        if self.__scheme__[i][0] == 'channel':
+                        if self.scheme[i][0] == 'channel':
                             channel = await self.client.get_channel(item)
                             gathered.append(channel)
-                        elif self.__scheme__[i][0] == 'user':
+                        elif self.scheme[i][0] == 'user':
                             user = None
                             if re.fullmatch(r'^\d{18}$', item):
                                 user = await self.client.get_user_info(int(item))
@@ -121,7 +122,7 @@ class DiscordModule(object):
                                     if not user:
                                         user = await self.client.get_user_info(id)
                             gathered.append(user)
-                        elif self.__scheme__[i][0] == 'server':
+                        elif self.scheme[i][0] == 'server':
                             gathered.append(await self.client.get_server(item))
                         else:
                             gathered.append(item)

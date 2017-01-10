@@ -19,21 +19,21 @@ def message_handler(function):
             if message.channel.type is discord.ChannelType.private:
                 print(("{} {} | Executed after {:.8}s\n\tUser: {} [{}]\n\t"+
                        "Channel: direct message\n\tMessage: {}").format(
-                           start.strftime("%H:%M:%S"), s.__word__,
+                           start.strftime("%H:%M:%S"), s.word,
                            (datetime.now() - start).total_seconds(),
                            message.author.name, message.author.id, message.content)
                      )
             elif message.channel.type is discord.ChannelType.group:
                 print(("{} {} | Executed after {:.8}s\n\tUser: {} [{}]\n\t"+
                        "Channel: private group ({})\n\tMembers: {}\n\tMessage: {}").format(
-                           start.strftime("%H:%M:%S"), s.__word__,
+                           start.strftime("%H:%M:%S"), s.word,
                            (datetime.now() - start).total_seconds(), message.author.name,
                            message.author.id, message.channel.id, message.content)
                      )
             elif message.channel.type is discord.ChannelType.text:
                 print(("{} {} | Executed after {:.8}s\n\tUser: {} [{}]\n\t"+
                        "Server: {} [{}]\n\tChannel: {} [{}]\n\tMessage: {}").format(
-                           start.strftime("%H:%M:%S"), s.__word__,
+                           start.strftime("%H:%M:%S"), s.word,
                            (datetime.now() - start).total_seconds(), message.author.name,
                            message.author.id, message.server.name, message.server.id,
                            message.channel.name, message.channel.id, message.content)
@@ -45,7 +45,7 @@ def message_handler(function):
                        Fore.MAGENTA + "\tUser: {} [{}]\n" + Fore.MAGENTA +
                        "\tChannel: direct message\n\tMessage: {}\n" + Fore.MAGENTA +
                        "\tError: {}" + Fore.RESET).format(
-                           start.strftime("%H:%M:%S"), s.__word__,
+                           start.strftime("%H:%M:%S"), s.word,
                            (datetime.now() - start).total_seconds(), message.author.name,
                            message.author.id, message.content, err.message)
                      )
@@ -55,7 +55,7 @@ def message_handler(function):
                        "\tChannel: private group ({})\n" + Fore.MAGENTA + "\tMembers: {}\n" +
                        Fore.MAGENTA + "\t" + "Message: {}\n" + Fore.MAGENTA + "\tError: {}" +
                        Fore.RESET).format(
-                           start.strftime("%H:%M:%S"), s.__word__,
+                           start.strftime("%H:%M:%S"), s.word,
                            (datetime.now() - start).total_seconds(), message.author.name,
                            message.author.id, message.channel.id, message.content, err.message)
                      )
@@ -64,7 +64,7 @@ def message_handler(function):
                        Fore.MAGENTA + "User: {} [{}]\n\t" + Fore.MAGENTA + "Server: {} [{}]\n\t" +
                        Fore.MAGENTA + "Channel: {} [{}]\n\t" + Fore.MAGENTA + "Message: {}\n" +
                        Fore.MAGENTA + "\tError: {}" + Fore.RESET).format(
-                           start.strftime("%H:%M:%S"), s.__word__,
+                           start.strftime("%H:%M:%S"), s.word,
                            (datetime.now() - start).total_seconds(), message.author.name,
                            message.author.id, message.server.name, message.server.id,
                            message.channel.name, message.channel.id, message.content, err.message)

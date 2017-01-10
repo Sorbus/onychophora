@@ -9,15 +9,15 @@ class Utility(DiscordModule):
     """
         Various utility functions.
     """
-    __prefix__ = "~"
-    __value__ = "tilde"
+    prefix = "~"
+    value = "tilde"
 
     class Avatar(DiscordModule.DiscordCommand):
-        __word__ = "utility.avatar"
-        __keys__ = ["av", "avatar"]
-        __desc__ = ["Returns a link to the author or another user's avatar."]
-        __example__ = ["%prefix%av | %prefix%av @someone"]
-        __scheme__ = [("user", False)]
+        word = "utility.avatar"
+        keys = ["av", "avatar"]
+        desc = ["Returns a link to the author or another user's avatar."]
+        example = ["%prefix%av | %prefix%av @someone"]
+        scheme = [("user", False)]
 
         async def fire(self, message: discord.Message, tup: tuple=None):
             if len(tup):
@@ -28,31 +28,31 @@ class Utility(DiscordModule):
                     message.author.avatar_url))
 
     class UserDetails(DiscordModule.DiscordCommand):
-        __word__ = "utility.user"
-        __keys__ = ["user", "member"]
-        __desc__ = ["Returns details about the author or another user."]
-        __example__ = ["%prefix%user | %prefix%user @someone"]
-        __scheme__ = [("user", False)]
+        word = "utility.user"
+        keys = ["user", "member"]
+        desc = ["Returns details about the author or another user."]
+        example = ["%prefix%user | %prefix%user @someone"]
+        scheme = [("user", False)]
 
         async def fire(self, message: discord.Message, tup: tuple=None):
             pass
 
     class ChannelDetails(DiscordModule.DiscordCommand):
-        __word__ = "utility.channel"
-        __keys__ = ["ch", "channel"]
-        __desc__ = ["Returns details about this or another channel."]
-        __example__ = ["%prefix%ch | %prefix%ch #somewhere"]
-        __scheme__ = [("channel", False)]
+        word = "utility.channel"
+        keys = ["ch", "channel"]
+        desc = ["Returns details about this or another channel."]
+        example = ["%prefix%ch | %prefix%ch #somewhere"]
+        scheme = [("channel", False)]
 
         async def fire(self, message: discord.Message, tup: tuple=None):
             pass
 
     class ServerDetails (DiscordModule.DiscordCommand):
-        __word__ = "utility.channel"
-        __keys__ = ["server"]
-        __desc__ = ["Returns details about this server."]
-        __example__ = ["%prefix%server"]
-        __scheme__ = []
+        word = "utility.channel"
+        keys = ["server"]
+        desc = ["Returns details about this server."]
+        example = ["%prefix%server"]
+        scheme = []
 
         async def fire(self, message: discord.Message, tup: tuple=None):
             server = message.server
@@ -76,21 +76,21 @@ class Utility(DiscordModule):
             await self.client.send_message(message.channel, result)
 
     class SaveChat(DiscordModule.DiscordCommand):
-        __word__ = "utility.savechat"
-        __keys__ = ["savechat"]
-        __desc__ = ["Saves the last X messages in chat."]
-        __example__ = ["%prefix%savechat 100"]
-        __scheme__ = [("num", True)]
+        word = "utility.savechat"
+        keys = ["savechat"]
+        desc = ["Saves the last X messages in chat."]
+        example = ["%prefix%savechat 100"]
+        scheme = [("num", True)]
 
         async def fire(self, message: discord.Message, tup: tuple=None):
             pass
 
     class Test(DiscordModule.DiscordCommand):
-        __word__ = "utility.test"
-        __keys__ = ["test"]
-        __desc__ = ["Simple test command."]
-        __example__ = ["%prefix%test | %prefix%test @someone"]
-        __scheme__ = [("user", False)]
+        word = "utility.test"
+        keys = ["test"]
+        desc = ["Simple test command."]
+        example = ["%prefix%test | %prefix%test @someone"]
+        scheme = [("user", False)]
 
         async def fire(self, message: discord.Message, tup: tuple=None):
             if not tup:
