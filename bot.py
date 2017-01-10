@@ -20,7 +20,7 @@ class Bot:
         self.help = {}
         self.load_modules()
 
-        pub.subscribe(self.prepare_users, 'ready')
+        pub.subscribe(self.on_ready, 'ready')
         pub.subscribe(self.add_user, 'member.join')
         pub.subscribe(self.remove_user, 'member.remove')
         pub.subscribe(self.update_user, 'member.update')
@@ -38,15 +38,15 @@ class Bot:
             for n, o in inspect.getmembers(obj):
                 if inspect.isclass(o):
                     if (issubclass(o, components.snips.discordModule.DiscordModule)
-                            and o.__prefix__ is not None
-                            and o.__value__ is not None
+                            and o.prefix is not None
+                            and o.value is not None
                             and str(o.__name__) not in self.config.module_blacklist):      
                         self.modules.append(o(self))
-                        if o.__prefix__ in self.prefixes:
-                            if self.prefixes[o.__prefix__] != o.__value__.lower():
+                        if o.prefix in self.prefixes:
+                            if self.prefixes[o.prefix] != o.value.lower():
                                 print("Prefix conflict on {}: {} is not {}".format(
-                                    o.__prefix__, o.__value__, self.prefixes[o.__prefix__]))
-                        self.prefixes[o.__prefix__] = o.__value__.lower()
+                                    o.prefix, o.value, self.prefixes[o.prefix]))
+                        self.prefixes[o.prefix] = o.value.lower()
                         loaded += " {}".format(o.__name__)
 
         if not loaded:
@@ -75,6 +75,10 @@ class Bot:
         for member in server.members:
             self.remove_user(member)
 
+    def on_ready(self):
+        self.prepare_users()
+        self.client.loop.create_task(self.report())
+
     def prepare_users(self):
         self.users['nicks'] = {}
         self.users['names'] = {}
@@ -84,4 +88,21 @@ class Bot:
             self.users['names'][server.id] = {}
             self.add_users(server)
 
-        print(self.users)
+    async def report(self):
+        print('Logged in as {} ({}).'.format(self.client.user.name, self.client.user.id))
+        print('Connected to {} servers:'.format(len(self.client.servers)))
+        for server in self.client.servers:
+            print('\t{}: {} users, {} channels, owned by {}.'.format(
+                server.name,
+                len(server.members),
+                len(server.channels),
+                server.owner.name
+            ))
+
+        print('Ready to serve, Mistress!')
+        print('------')
+        if self.config.notify:
+            for o in self.config.owners.keys():
+                owner = await self.client.get_user_info(o)
+                await self.client.send_message(owner, "I'm ready to serve you, {}!".format(
+                    self.config.owners[o]))
