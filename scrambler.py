@@ -29,9 +29,9 @@ name_suffix = ['of the beyond', 'of the tower', 'of the ending'
 
 def create_change(member):
     if random.randint(0,9):
-        new_name = member.display_name
+        name = member.display_name
     else:
-        new_name = ''.join(random.sample(
+        name = ''.join(random.sample(
             member.display_name, len(member.display_name)))
 
     if random.randint(0, 2):
@@ -44,15 +44,15 @@ def create_change(member):
     else:
         pre = ''
 
-    if (len(new_name) + len(suf) + len(pre)) > 32:
-        over = (len(new_name) + len(suf) + len(pre)) - 32
+    if (len(name) + len(suf) + len(pre)) > 32:
+        over = (len(name) + len(suf) + len(pre)) - 32
 
-        if len(new_name) > over:
-            new_name = new_name[:over]
+        if len(name) > over:
+            name = name[:(len(name)-over)]
         else:
             suf = ''
 
-    return ('{}{}{}'.format(pre,new_name,suf)).title()
+    return ('{}{}{}'.format(pre,name,suf)).title().replace('  ', ' ')
 
 def save():
     with open('names.yml', 'w') as stream:
@@ -110,6 +110,8 @@ async def scramble(member: discord.Member, server: discord.Server, message: disc
                     data['cooldown'][member.id] = datetime.datetime.now()
                     await client.change_nickname(member, data['names'][member.id])
     except discord.errors.Forbidden:
+        pass
+    except discord.errors.HTTPException:
         pass
 
 client.run('MjY1NjU2NTE2MDkzMjgwMjU3.C0yfpg.pmF5oC_X0gCLadYAiR76CYRaHmk')
