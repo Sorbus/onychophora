@@ -84,7 +84,8 @@ async def scramble(member: discord.Member, server: discord.Server, message: disc
                 await client.add_reaction(message, '👍')
                 await client.add_reaction(message, '👎')
                 await client.add_reaction(message, '💀')
-                res = await client.wait_for_reaction(['👍', '👎', '💀'], message=message, timeout=60)
+                res = await client.wait_for_reaction(['👍', '👎', '💀'], message=message,
+                                                     timeout=60, user=message.author)
                 await client.remove_reaction(message, '👍', message.server.me)
                 await client.remove_reaction(message, '👎', message.server.me)
                 await client.remove_reaction(message, '💀', message.server.me)
