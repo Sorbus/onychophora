@@ -23,7 +23,7 @@ async def on_message(message: discord.Message):
             if message.content.startswith(key):
                 pub.sendMessage("message.{}.{}".format(
                     value,
-                    message.content.split(' ')[0][len(key):]
+                    message.content.split(' ')[0][len(key):].lower().replace('.', 'dot')
                     ), message=message)
                 return
         pub.sendMessage('message.other', message=message)

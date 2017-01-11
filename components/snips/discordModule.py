@@ -71,7 +71,7 @@ class DiscordModule(object):
         example = None # an example of how to use it
         scheme = None # if present, used to generate the regex
         regex = None # regex which determines whether input is valid
-        requires = None # if set, only allow users with this permission to run the command
+        requires = None # array. if set, only allow users with this permission to run the command
 
         def __init__(self, module):
             self.config = module.config
@@ -134,6 +134,12 @@ class DiscordModule(object):
 
         async def fire(self, message: discord.Message, match, tup: tuple=None):
             raise NotImplementedError
+
+        async def send_and_delete(self, channel: discord.Channel, message: str, sec: int=False):
+            msg = await self.client.send_message(channel, message)
+            if sec:
+                await asyncio.sleep(sec, loop=self.client.loop)
+                await self.client.delete_message(msg)
 
     @staticmethod
     def make_regex(scheme: list):

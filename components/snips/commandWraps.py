@@ -69,59 +69,6 @@ def message_handler(function):
                            message.author.id, message.server.name, message.server.id,
                            message.channel.name, message.channel.id, message.content, err.message)
                      )
-    return wrapper
-
-def is_server(function):
-    """
-    Only allow commands to be run on servers.
-    """
-
-    async def wrapper(s, **kwargs):
-        if "message" in kwargs.keys():
-            if kwargs["message"].channel.type is not discord.ChannelType.text:
-                raise CommandError("must be run on a server")
-            return await function(s, message=kwargs["message"])
-        else:
-            raise CommandError("unhandled input in commandWraps.is_server")
-    return wrapper
-
-def manage_channels(function):
-    """
-    Only allow commands to be run by people with this permission
-    """
-
-    async def wrapper(s, **kwargs):
-        if "message" in kwargs.keys():
-            if (kwargs["message"].author.permissions_in(kwargs["message"].channel)).manage_channels:
-                raise CommandError("requires manage messages")
-            return await function(s, message=kwargs["message"])
-        else:
-            raise CommandError("unhandled input in commandWraps.manage_channels")
-    return wrapper
-
-def manage_server(function):
-    """
-    Only allow commands to be run by people with this permission
-    """
-
-    async def wrapper(s, **kwargs):
-        if "message" in kwargs.keys():
-            if (kwargs["message"].author.permissions_in(kwargs["message"].channel)).manage_server:
-                raise CommandError("requires manage messages")
-            return await function(s, message=kwargs["message"])
-        else:
-            raise CommandError("unhandled input in commandWraps.manage_channels")
-    return wrapper
-
-def is_owner(function):
-    """
-    Restrict command to owner
-    """
-    async def wrapper(s, **kwargs):
-        if "message" in kwargs.keys():
-            if int(kwargs["message"].author.id) not in s.config.owners.keys():
-                raise CommandError("restricted to owner")
-            return await function(s, message=kwargs["message"])
-        else:
-            raise CommandError("unhandled input in commandWraps.manage_channels")
+        except PermissionError:
+            pass
     return wrapper

@@ -1,5 +1,3 @@
-__all__ = ["startup", "logging", "notification", "response", "utility", "quotes", "help", "backstory", "administration"]
-
-# __all__ = ["backstory", "startup"]
+__all__ = ["utility", "quotes", "permissions", "snips"]
 
 from . import *
