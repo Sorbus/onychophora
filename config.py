@@ -29,7 +29,9 @@ class Global(object):
             self.favored = configfile['favored'] if "favored" in configfile else {}
             self.whitelist = configfile['whitelist']
             self.blacklist = configfile['blacklist']
-            self.module_blacklist = configfile['module_blacklist']
+            self.module_whitelist = configfile['module_whitelist']
+            if 'Permissions' not in self.module_whitelist:
+                self.module_whitelist.append("Permissions")
             self.backstory = configfile['backstory']
             self.backstory['timer'] = configfile['backstory']['timer'] if (
                 'timer' in self.backstory) else 20

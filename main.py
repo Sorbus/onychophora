@@ -6,6 +6,7 @@ from pubsub import pub
 import sys, inspect
 import colorama
 import dataset
+import re
 from stuf import stuf
 from bot import Bot
 
@@ -23,7 +24,8 @@ async def on_message(message: discord.Message):
             if message.content.startswith(key):
                 pub.sendMessage("message.{}.{}".format(
                     value,
-                    message.content.split(' ')[0][len(key):].lower().replace('.', 'dot')
+                    bot.pattern.sub(lambda x: bot.prefixes[x.group()],
+                                message.content.split(' ')[0][len(key):].lower())
                     ), message=message)
                 return
         pub.sendMessage('message.other', message=message)

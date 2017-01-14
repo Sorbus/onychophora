@@ -7,17 +7,27 @@ import sys, inspect
 import colorama
 import dataset
 import sqlalchemy
+import re
 from stuf import stuf
 
 class Bot:
+    pattern = re.compile(r'\.|\$|\~|\;|\!')
+    prefixes = {
+        '.': 'dot',
+        '$': 'dol',
+        '~': 'til',
+        ';': 'sem',
+        '!': 'exc'
+    }
+
     def __init__(self):
         self.config = config.Global()
         self.client = discord.Client()
         self.db = dataset.connect('sqlite:///' + self.config.files['database'], row_type=stuf)
         self.modules = []
-        self.prefixes = {}
         self.users = {}
         self.help = {}
+        
         self.load_modules()
 
         pub.subscribe(self.on_ready, 'ready')
@@ -39,14 +49,8 @@ class Bot:
                 if inspect.isclass(o):
                     if (issubclass(o, components.snips.discordModule.DiscordModule)
                             and o.prefix is not None
-                            and o.value is not None
-                            and str(o.__name__) not in self.config.module_blacklist):      
+                            and str(o.__name__) in self.config.module_whitelist):
                         self.modules.append(o(self))
-                        if o.prefix in self.prefixes:
-                            if self.prefixes[o.prefix] != o.value.lower():
-                                print("Prefix conflict on {}: {} is not {}".format(
-                                    o.prefix, o.value, self.prefixes[o.prefix]))
-                        self.prefixes[o.prefix] = o.value.lower()
                         loaded += " {}".format(o.__name__)
 
         if not loaded:

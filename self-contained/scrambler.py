@@ -71,7 +71,7 @@ async def on_message(message: discord.Message):
 
 async def scramble(member: discord.Member, server: discord.Server, message: discord.Message):
     try:
-        if random.randint(0,9) is not 0:
+        if not message.content.startswith(".randomname"):
             return
         if (int(server.id) == 239675999959121921 and
                 member.id not in data['blacklist']):
@@ -83,32 +83,36 @@ async def scramble(member: discord.Member, server: discord.Server, message: disc
                 save()
                 await client.add_reaction(message, '👍')
                 await client.add_reaction(message, '👎')
-                await client.add_reaction(message, '💀')
+                #await client.add_reaction(message, '💀')
                 res = await client.wait_for_reaction(['👍', '👎', '💀'], message=message,
-                                                     timeout=60, user=message.author)
+                                                     timeout=300, user=message.author)
                 await client.remove_reaction(message, '👍', message.server.me)
                 await client.remove_reaction(message, '👎', message.server.me)
-                await client.remove_reaction(message, '💀', message.server.me)
+                #await client.remove_reaction(message, '💀', message.server.me)
                 if res:
                     if res.reaction.emoji is '👍':
                         pass
                     elif res.reaction.emoji is '👎':
                         data['names'].pop(member.id)
+                        print("{} rejected {}".format(member.name, member.nickname))
+                        await client.change_nickname(member, member.display_name)
                         save()
                     elif res.reaction.emoji is '💀':
                         data['names'].pop(member.id)
+                        print("{} opted out forever".format(member.name))
+                        await client.change_nickname(member, member.display_name)
                         save()
                 
-            else:
-                try:
-                    if (data['cooldown'][member.id] > (datetime.datetime.now() - datetime.timedelta(minutes=7))):
-                        return
-                except KeyError:
-                    pass
-                if str(member.name) != str(data['names'][member.id]):
-                    print('restored {} -> {}'.format(member.name, data['names'][member.id]))
-                    data['cooldown'][member.id] = datetime.datetime.now()
-                    await client.change_nickname(member, data['names'][member.id])
+            # else:
+            #     try:
+            #         if (data['cooldownd'][member.id] > (datetime.datetime.now() - datetime.timedelta(minutes=7))):
+            #             return
+            #     except KeyError:
+            #         pass
+            #     if str(member.name) != str(data['names'][member.id]):
+            #         print('restored {} -> {}'.format(member.name, data['names'][member.id]))
+            #         data['cooldowns'][member.id] = datetime.datetime.now()
+            #         await client.change_nickname(member, data['names'][member.id])
     except discord.errors.Forbidden:
         pass
     except discord.errors.HTTPException:

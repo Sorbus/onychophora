@@ -15,7 +15,7 @@ class Quotes(DiscordModule):
         Allows users to store and retrieve quotes.
     """
     prefix = "."
-    value = "period"
+    value = "dot"
 
     def __init__(self, bot):
         self.db = bot.db
@@ -31,7 +31,7 @@ class Quotes(DiscordModule):
             self.table.create_column('text', sqlalchemy.TEXT)
 
             self.table.create_index(['keyword', 'guildId'])
-        super().__init__(bot)
+        super().__init__(bot) 
 
     class Quote(DiscordModule.DiscordCommand):
         def __init__(self, bot):
@@ -40,10 +40,10 @@ class Quotes(DiscordModule):
 
     class AddQuote(Quote):
         word = "quote.add"
-        keys = ("dot")
+        keys = (".", "getq")
         desc = "Add a quote to the database."
         example = "%prefix%. keyword quote"
-        scheme = (("word", True), ("all", True))
+        scheme = [("word", True), ("all", True)]
         requires = ("isServer")
 
         async def fire(self, message: discord.Message, tup: tuple=None):
@@ -59,10 +59,10 @@ class Quotes(DiscordModule):
 
     class GetQuote(Quote):
         word = "quote.get"
-        keys = ("dotdot")
+        keys = ("..", "addq")
         desc = "Retrieve a quote."
         example = "%prefix%.. keyword"
-        scheme = (("all", True))
+        scheme = [("all", True)]
         requires = ("isServer")
 
         async def fire(self, message: discord.Message, tup: tuple=None):
@@ -77,7 +77,7 @@ class Quotes(DiscordModule):
         keys = ("changequote", "chqu")
         desc = "Modify an existing quote."
         example = "%prefix%chqu id quote"
-        scheme = (("num", True), ("word", True))
+        scheme = [("num", True), ("word", True)]
         requires = ("isServer")
 
         async def fire(self, message: discord.Message, tup: tuple=None):
@@ -104,22 +104,22 @@ class Quotes(DiscordModule):
     class DeleteQuote(Quote):
         word = "quote.delete"
         keys = ("delq", "qdel")
-        desc = [("Delete a quote by id or keyword. Id is recommended; "
-                 "keywords will choose a random quote under that keyword to delete.")]
-        example = ["%prefix%delq key"]
-        scheme = (("word", True))
-        requires = ["isServer"]
+        desc = ("Delete a quote by id or keyword. Id is recommended; " +
+                "keywords will choose a random quote under that keyword to delete.")
+        example = "%prefix%delq key"
+        scheme = [("word", True)]
+        requires = ("isServer")
 
         async def fire(self, message: discord.Message, tup: tuple=None):
             if tup[0].isDigit():
                 pass
-            
+
 
     class ListQuotes(Quote):
         word = "quote.list"
-        keys = ["listquotes","liqu"]
-        desc = ["List all quotes on a keyword."]
-        example = ["%prefix%liqu keyword"]
+        keys = ("listquotes", "liqu")
+        desc = "List all quotes on a keyword."
+        example = "%prefix%liqu keyword"
         scheme = [("all", True)]
         requires = ["isServer"]
 

@@ -14,13 +14,6 @@ class DiscordModule(object):
     '''
     prefix = None
     # must be set to load
-    value = None
-    '''
-        Examples:
-        ~: tilde
-        !: exclaimation
-
-    '''
     dispatcher = {}
     # should be set if used
 
@@ -30,6 +23,8 @@ class DiscordModule(object):
         '''
         self.config = bot.config
         self.client = bot.client
+        self.prefixes = bot.prefixes
+        self.pattern = bot.pattern
         self.help = bot.help
         self.users = bot.users
         self.db = bot.db
@@ -39,10 +34,10 @@ class DiscordModule(object):
         for name, obj in inspect.getmembers(self):
             if inspect.isclass(obj):
                 if issubclass(obj, DiscordModule.DiscordCommand):
-                    if (obj.word and
-                            obj.keys and
-                            obj.desc and
-                            obj.example):
+                    if (obj.word is not None and
+                            obj.keys is not None and
+                            obj.desc is not None and
+                            obj.example is not None):
                         self.commands.append(obj(self))
                         for key in obj.keys:
                             self.help['{}{}'.format(self.prefix, key)] = (
@@ -80,7 +75,10 @@ class DiscordModule(object):
             self.db = module.db
             self.loop = asyncio.get_event_loop()
             for key in self.keys:
-                pub.subscribe(self, 'message.{}.{}'.format(module.value, key))
+                pub.subscribe(self, 'message.{}.{}'.format(
+                    module.pattern.sub(lambda x: module.prefixes[x.group()], module.prefix),
+                    module.pattern.sub(lambda x: module.prefixes[x.group()], key)
+                    ))
             if self.scheme:
                 self.regex = DiscordModule.make_regex(self.scheme)
 
@@ -88,7 +86,7 @@ class DiscordModule(object):
             self.loop.create_task(self.process(message=message))
 
         @message_handler
-        async def process(self, message):
+        async def process(self, message: discord.Message):
             match = re.fullmatch(self.regex, message.content)
             if not match:
                 raise CommandError("invalid format")
@@ -104,9 +102,13 @@ class DiscordModule(object):
                             gathered.append(channel)
                         elif self.scheme[i][0] == 'user':
                             user = None
-                            if re.fullmatch(r'^\d{18}$', item):
-                                user = await self.client.get_user_info(int(item))
-                            else:
+                            if len(message.mentions) is 1:
+                                user = message.mentions[0]
+                            if not user and re.fullmatch(r'^\d{18}$', item):
+                                print(int(item))
+                                user = message.server.get_member(item)
+                            if not user:
+                                found = None
                                 for id, name in self.users['names'][message.server.id].items():
                                     if name == item.lower():
                                         found = id
@@ -116,11 +118,11 @@ class DiscordModule(object):
                                         found = id
                                         break
                                 if found:
-                                    for member in message.server.members:
-                                        if member.id == found:
-                                            user = member
+                                    user = message.server.get_member(found)
                                     if not user:
                                         user = await self.client.get_user_info(id)
+                                else:
+                                    raise CommandError("invalid username")
                             gathered.append(user)
                         elif self.scheme[i][0] == 'server':
                             gathered.append(await self.client.get_server(item))
@@ -138,8 +140,11 @@ class DiscordModule(object):
         async def send_and_delete(self, channel: discord.Channel, message: str, sec: int=False):
             msg = await self.client.send_message(channel, message)
             if sec:
-                await asyncio.sleep(sec, loop=self.client.loop)
-                await self.client.delete_message(msg)
+                self.loop.create_task(self.wait_to_delete(msg, sec))
+
+        async def wait_to_delete(self, message: discord.Message, sec: int):
+            await asyncio.sleep(sec, loop=self.client.loop)
+            await self.client.delete_message(message)
 
     @staticmethod
     def make_regex(scheme: list):
@@ -169,7 +174,9 @@ class DiscordModule(object):
                 prep += r'(?: {})'.format(parts[item[0]])
                 prep += r'' if item[1] else r'?'
             else:
-                raise Exception
+                print(item)
+                print(scheme)
+                raise ValueError
 
         prep += r'$'
 

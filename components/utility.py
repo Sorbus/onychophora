@@ -1,6 +1,7 @@
 import asyncio
 import components.snips.commandWraps as wraps
 from components.snips.discordModule import DiscordModule as DiscordModule
+import components.snips.permissionHandler as permissionHandler
 from pubsub import pub
 import discord
 import re
@@ -10,7 +11,6 @@ class Utility(DiscordModule):
         Various utility functions.
     """
     prefix = "~"
-    value = "tilde"
 
     class Avatar(DiscordModule.DiscordCommand):
         word = "utility.avatar"
@@ -84,6 +84,44 @@ class Utility(DiscordModule):
 
         async def fire(self, message: discord.Message, tup: tuple=None):
             pass
+
+    class ChangeSelf(DiscordModule.DiscordCommand):
+        word = "utility.nick"
+        keys = ["name", "nick"]
+        desc = ["Change your name (or someone else's)"]
+        example = ["%prefix%name nick | %prefix$name \"your shiny new name\" |"
+                   " %prefix%name nick @someone"]
+        scheme = [("word", True), ("user", False)]
+        requires = ("isServer")
+
+        async def fire(self, message: discord.Message, tup: tuple=None):
+            if len(tup) is 1:
+                try:
+                    await self.client.change_nickname(message.author, tup[0])
+                    await self.send_and_delete(message.channel,
+                                               "I've changed your nickname to `{}`!".format(tup[0]),
+                                               15)
+                except discord.errors.Forbidden:
+                    await self.send_and_delete(message.channel,
+                                               "You're more powerful than me - "
+                                               "I couldn't change your nickname!", 15)
+            else:
+                permissionHandler.manageNicknames(message.author.permissions_in(message.channel))
+
+                if not message.author.top_role > tup[1].top_role:
+                    await self.send_and_delete(message.channel, "They're more powerful than you - "
+                                               "I can't do that for you!", 15)
+                    return
+
+                try:
+                    await self.client.change_nickname(tup[1], tup[0])
+                    await self.send_and_delete(message.channel,
+                                               "I've changed {}'s nickname to `{}`!".format(
+                                                   tup[1].mention, tup[0]))
+                except discord.errors.Forbidden:
+                    await self.send_and_delete(message.channel,
+                                               "They're more powerful than me - "
+                                               "I couldn't change their nickname!", 15)
 
     class Test(DiscordModule.DiscordCommand):
         word = "utility.test"
