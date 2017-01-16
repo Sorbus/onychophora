@@ -141,3 +141,4 @@ $RECYCLE.BIN/
 data/config.yml
 plans.txt
 data/database.db
+self-contained/config.yml

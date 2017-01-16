@@ -2,8 +2,10 @@ import discord
 import asyncio
 import re
 import random
+from helpers import Config
 
 client = discord.Client()
+config = Config()
 
 channels = {}
 
@@ -43,4 +45,4 @@ async def on_message(message: discord.Message):
         #print("invalid channel or user")
         pass
 
-client.run('MjY1NjU2NTE2MDkzMjgwMjU3.C0yfpg.pmF5oC_X0gCLadYAiR76CYRaHmk')
+client.run(config.tokens['barmaid'])
