@@ -1,9 +1,11 @@
 import discord
 import asyncio
 from gmusicapi import Mobileclient
+from helpers import Config
 
 client = discord.Client()
 api = Mobileclient()
+config = Config()
 
 @client.event
 async def on_ready():
@@ -23,4 +25,4 @@ async def on_message(message: discord.Message):
             player.volume = 0.7
             player.start()
 
-client.run('')
+client.run(config.tokens['barmaid'])

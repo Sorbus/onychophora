@@ -1,8 +1,10 @@
 import discord
 import asyncio
 import yaml
+from helpers import Config
 
 client = discord.Client()
+config = Config()
 
 @client.event
 async def on_ready():
@@ -97,4 +99,4 @@ async def on_server_join(server: discord.Server):
                                                 "brother. I hope that we'll all get along well! " +
                                                 ":smiley:").format(client.user.mention))
 
-client.run('MjY1NjU2NTE2MDkzMjgwMjU3.C0yfpg.pmF5oC_X0gCLadYAiR76CYRaHmk')
+client.run(config.tokens['barmaid'])

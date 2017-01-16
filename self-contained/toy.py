@@ -1,7 +1,9 @@
 import discord
 import asyncio
+from helpers import Config
 
 client = discord.Client()
+config = Config()
 
 @client.event
 async def on_ready():
@@ -57,4 +59,4 @@ async def on_member_join(member):
         await client.add_roles(member, role)
         await client.logout()
 
-client.run('MjY1NjU2NTE2MDkzMjgwMjU3.C0yfpg.pmF5oC_X0gCLadYAiR76CYRaHmk')
+client.run(config.tokens['barmaid'])

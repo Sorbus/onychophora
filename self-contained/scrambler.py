@@ -5,8 +5,10 @@ import random
 import yaml
 import atexit
 import datetime
+from helpers import Config
 
 client = discord.Client()
+config = Config()
 
 try:
     with open('names.yml', 'r') as stream:
@@ -14,8 +16,7 @@ try:
 except FileNotFoundError:
     data = {}
     data['names'] = {}
-    data['cooldowns'] = {}
-    data['blacklist'] = []
+    data['original'] = {}
 
 name_prefix = ['septentional','brabbling','jargogled', 'glimmering',
                'yemeles', 'whilom', 'nubivagant', 'pamphagous', 'crawling',
@@ -32,7 +33,7 @@ def create_change(member):
         name = member.display_name
     else:
         name = ''.join(random.sample(
-            member.display_name, len(member.display_name)))
+            member.display_name, len(member.name)))
 
     if random.randint(0, 2):
         suf = ' {}'.format(random.choice(name_suffix))
@@ -65,57 +66,62 @@ async def on_ready():
     print(client.user.id)
     print('------')
 
+    # server = None
+    # for s in client.servers:
+    #     if int(s.id) == 239675999959121921:
+    #         server = s
+    # await client.change_nickname(server.me, "barmaid")
+
 @client.event
 async def on_message(message: discord.Message):
     await scramble(message.author, message.server, message)
 
 async def scramble(member: discord.Member, server: discord.Server, message: discord.Message):
     try:
-        if not message.content.startswith(".randomname"):
+        if int(server.id) != 239675999959121921:
             return
-        if (int(server.id) == 239675999959121921 and
-                member.id not in data['blacklist']):
-            if member.id not in data['names'].keys():
-                data['names'][member.id] = create_change(member)
-                data['cooldowns'][member.id] = datetime.datetime.now()
-                print('changed {} -> {}'.format(member.name, data['names'][member.id]))
+        if message.content.startswith(".randomname"):
+            data['names'][member.id] = create_change(member)
+            if not member.id in data['original']:
+                data['original'][member.id] = member.display_name
+            print('changed {} -> {}'.format(member.name, data['names'][member.id]))
+            old_name = str(member.display_name)
+            await client.change_nickname(member, data['names'][member.id])
+            save()
+            await client.add_reaction(message, '👍')
+            await client.add_reaction(message, '👎')
+            res = await client.wait_for_reaction(['👍', '👎'], message=message,
+                                                 timeout=300, user=message.author)
+            await client.remove_reaction(message, '👍', message.server.me)
+            await client.remove_reaction(message, '👎', message.server.me)
+            if res:
+                if res.reaction.emoji == '👍':
+                    print("{} accepted {}".format(member.name, member.nick))
+                elif res.reaction.emoji == '👎':
+                    data['names'].pop(member.id)
+                    print("{} rejected {}".format(member.name, member.nick))
+                    await client.change_nickname(member, old_name)
+                    save()
+        elif message.content.startswith(".revertname"):
+            if member.id in data['original']:
+                await client.change_nickname(member, data['original'][member.id])
+                await client.send_message(
+                    message.channel, "Your name has been reverted to what it was before you "
+                                     "first used `.randomname`.")
+            else:
+                await client.send_message(message.channel, "You haven't used `.randomname` yet.")
+        elif message.content.startswith(".restorename"):
+            if member.id in data['names']:
                 await client.change_nickname(member, data['names'][member.id])
-                save()
-                await client.add_reaction(message, '👍')
-                await client.add_reaction(message, '👎')
-                #await client.add_reaction(message, '💀')
-                res = await client.wait_for_reaction(['👍', '👎', '💀'], message=message,
-                                                     timeout=300, user=message.author)
-                await client.remove_reaction(message, '👍', message.server.me)
-                await client.remove_reaction(message, '👎', message.server.me)
-                #await client.remove_reaction(message, '💀', message.server.me)
-                if res:
-                    if res.reaction.emoji is '👍':
-                        pass
-                    elif res.reaction.emoji is '👎':
-                        data['names'].pop(member.id)
-                        print("{} rejected {}".format(member.name, member.nickname))
-                        await client.change_nickname(member, member.display_name)
-                        save()
-                    elif res.reaction.emoji is '💀':
-                        data['names'].pop(member.id)
-                        print("{} opted out forever".format(member.name))
-                        await client.change_nickname(member, member.display_name)
-                        save()
-                
-            # else:
-            #     try:
-            #         if (data['cooldownd'][member.id] > (datetime.datetime.now() - datetime.timedelta(minutes=7))):
-            #             return
-            #     except KeyError:
-            #         pass
-            #     if str(member.name) != str(data['names'][member.id]):
-            #         print('restored {} -> {}'.format(member.name, data['names'][member.id]))
-            #         data['cooldowns'][member.id] = datetime.datetime.now()
-            #         await client.change_nickname(member, data['names'][member.id])
+                await client.send_message(
+                    message.channel, "Your name has been reverted to what it was the last "
+                                     "time you used `.randomname`.")
+            else:
+                await client.send_message(message.channel, "You haven't used `.randomname` yet.")
+
     except discord.errors.Forbidden:
         pass
     except discord.errors.HTTPException:
         pass
 
-client.run('MjY1NjU2NTE2MDkzMjgwMjU3.C0yfpg.pmF5oC_X0gCLadYAiR76CYRaHmk')
+client.run(config.tokens['barmaid'])
