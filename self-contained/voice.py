@@ -1,10 +1,10 @@
 import discord
 import asyncio
-from gmusicapi import Mobileclient
+# from gmusicapi import Mobileclient
 from helpers import Config
 
 client = discord.Client()
-api = Mobileclient()
+# api = Mobileclient()
 config = Config()
 
 @client.event
@@ -16,13 +16,18 @@ async def on_ready():
 
 @client.event
 async def on_message(message: discord.Message):
-    if message.content is "begin, my dear" and message.author.name == "Else":
-        channel = message.author.voice_channel
-        if channel:
-            print(message.author.name + " in " + channel.id + " [" + channel.name + "]")
-            voice = await client.join_voice_channel(channel)
-            player = voice.create_ffmpeg_player('allure.mp3', options="-application lowdelay -packet_loss 10 -ar 32000")
-            player.volume = 0.7
-            player.start()
+    if message.author.name == "Else":
+        if message.content == "tock":
+            channel = message.author.voice_channel
+            if channel:
+                print(message.author.name + " in " + channel.id + " [" + channel.name + "]")
+                voice = await client.join_voice_channel(channel)
+                player = voice.create_ffmpeg_player('tick.mp3', options="-application lowdelay -packet_loss 10 -ar 32000")
+                player.volume = 0.7
+                player.start()
+            else:
+                print("not in voice")
+        else:
+            print(message.content)
 
 client.run(config.tokens['barmaid'])

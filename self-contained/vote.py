@@ -42,12 +42,12 @@ async def on_message(message: discord.Message):
 
             msg = None
             try:
-                msg = await client.get_message(message.channel, match[1])
+                msg = await client.get_message(message.channel, match.group(1))
             except discord.errors.NotFound:
                 # print("not found in {}".format(message.channel.name))
                 for c in message.server.channels:
                     try:
-                        msg = await client.get_message(c, match[1])
+                        msg = await client.get_message(c, match.group(1))
                         break
                     except discord.errors.NotFound:
                         pass
@@ -61,10 +61,10 @@ async def on_message(message: discord.Message):
 
             match2 = re.search('Voting: ([^$]+)\n', msg.content)
             if match2:
-                subject = match2[1]
+                subject = match2.group(1)
             else:
                 try:
-                    subject = match[2]
+                    subject = match.group(2)
                 except IndexError:
                     subject = "unidentified subject"
             if not subject:
