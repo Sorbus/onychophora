@@ -63,9 +63,9 @@ async def on_message(message: discord.Message):
     if message.channel.permissions_for(message.author).manage_messages:
         if message.content.startswith('.vote '):
             msg = await client.send_message(message.channel,
-                                                "@here\nVoting: {}\n(Click on a reaction to vote.)"
-                                                "\nClick ❓ to tally publicly (mods only) and ❔ to"
-                                                " tally privately.".format(message.content[6:]))
+                                            "@here\nVoting: {}\nClick on a reaction to vote."
+                                            "\nTap ❔ or ❓ to tally."
+                                            "".format(message.content[6:]))
 
             await client.add_reaction(msg, '👍')
             await client.add_reaction(msg, '👎')
