@@ -4,9 +4,13 @@ import sys
 import re
 from helpers import Config
 import types
+import yaml
+from random import choice
 
 client = discord.Client()
 config = Config()
+
+compliments = yaml.load(open('data/compliment.yml', newline=''))
 
 @client.event
 async def on_ready():
@@ -57,10 +61,9 @@ async def parse_msg_re_add(self, data):
 async def on_message(message: discord.Message):
     if message.author.bot:
         return
-    if not message.channel.name in ['the-council', 'mod-chat', 'elses-web', 'crypt']:
-        return
 
-    if message.channel.permissions_for(message.author).manage_messages:
+    if (message.channel.name in ['the-council', 'mod-chat', 'elses-web', 'crypt'] and
+       message.channel.permissions_for(message.author).manage_messages):
         if message.content.startswith('.vote '):
             msg = await client.send_message(message.channel,
                                             "@here\nVoting: {}\nClick on a reaction to vote."
@@ -73,6 +76,7 @@ async def on_message(message: discord.Message):
             await client.add_reaction(msg, '❔')
             await client.pin_message(msg)
             await client.delete_message(message)
+            print('started vote for {}'.format(message.author.name))
 
         if message.content.startswith('.tally '):
             match = re.search('(\d{18}) ?([^$]+)?', message.content)
@@ -99,6 +103,19 @@ async def on_message(message: discord.Message):
                 return
 
             await tally_votes(msg, message.channel, match.group(2))
+
+    if (message.clean_content.lower().startswith("compliment")
+        and not message.channel.is_private):
+        if message.clean_content.lower() == 'compliment me':
+            await client.send_message(message.channel, choice(compliments['first']).replace('%user%', message.author.mention))
+            print('complimented {}'.format(message.author.name))
+        elif len(message.mentions) is 1:
+            if message.mentions[0] is message.author:
+                await client.send_message(message.channel, choice(compliments['first']).replace('%user%', message.author.mention))
+                print('complimented {}'.format(message.author.name))
+            else:
+                await client.send_message(message.channel, choice(compliments['second']).replace('%source%', message.author.mention).replace('%target%', message.mentions[0].mention))
+                print('complimented {} for {}'.format(message.mentions[0].name, message.author.name))
 
 @client.event
 async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
