@@ -104,9 +104,9 @@ async def on_message(message: discord.Message):
 
             await tally_votes(msg, message.channel, match.group(2))
 
-    if (message.clean_content.lower().startswith("compliment")
+    if ((message.clean_content.lower().startswith("compliment") or message.clean_content.lower().startswith("please compliment"))
         and not message.channel.is_private):
-        if message.clean_content.lower() == 'compliment me':
+        if message.clean_content.lower() in ['compliment me', 'please compliment me']:
             await client.send_message(message.channel, choice(compliments['first']).replace('%user%', message.author.mention))
             print('complimented {}'.format(message.author.name))
         elif len(message.mentions) is 1:
