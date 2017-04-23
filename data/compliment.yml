@@ -8,6 +8,11 @@
   - "Your mind is amazing, %user%"
   - "Hey, %user%~ :kiss:"
   - "You're so warm, so kind and beautiful, %user%. I'm glad we met"
+  - "You're an absolute moo, %user%"
+  - "You're a moon, %user%"
+  - "*pats %user%'s head*\nYou're doing a good job."
+  - "*pokes %user%'s cheek*\nYou're a cutie!"
+  - "You're a swell person, %user%"
 
 "second":
   - "%source% thinks you're really swell, %target%"
@@ -16,3 +21,6 @@
   - "I think that %source% really likes %target%"
   - "Hey, %target%! %source% wanted me to relay this to you: :kiss:"
   - "Oooh, %source% wants to kiss %target%! How scandalous~"
+  - "Hey %target%, %source% thinks that you're a moo!"
+  - "*locks %target% in a closet with %user%*\nHave fun~"
+  - "%source% thinks you're a great person, %target%"
